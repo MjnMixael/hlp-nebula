@@ -53,4 +53,14 @@ class MetaRepository extends EntityRepository
 
         return new Paginator($query, true);
     }
+
+    public function searchMetas($term)
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->where('m.modId LIKE :keyword')
+            ->orderBy('m.modId', 'ASC')
+            ->setParameter('keyword', '%'.$term.'%');
+
+        return $qb->getQuery()->getResult();
+    }
 }

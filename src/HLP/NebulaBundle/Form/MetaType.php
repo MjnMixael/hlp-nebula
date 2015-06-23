@@ -63,7 +63,7 @@ class MetaType extends AbstractType
                     'class'    => 'HLPNebulaBundle:Category',
                     'expanded'   => true,
                     'multiple' => true))
-            ->add('logo',           new LogoType())
+            ->add('logo',           new LogoType(), array('required' => false))
         ;
     }
     

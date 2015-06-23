@@ -17,7 +17,7 @@
     <br/>
     <h2>Create your <span class="text-info">personal mod repository</span></h2>
     <hr/>
-    <p>More information on Hard Light Productions forum : <a href="http://www.hard-light.net/forums/index.php?topic=86364.0">official Knossos and Nebula development thread.</a>{% if is_granted("IS_AUTHENTICATED_REMEMBERED") %}<br/><br/>You can already <a href="{{ path('hlp_nebula_owner', {'owner': app.user.usernameCanonical }) }}">access your personal mod repository</a>.{% endif %}</p>
+    <p>More information on Hard Light Productions forum : <a href="http://www.hard-light.net/forums/index.php?topic=86364.0">official Knossos and Nebula development thread.</a>{% if is_granted("IS_AUTHENTICATED_REMEMBERED") %}<br/><br/>You can already <a href="{{ path('hlp_nebula_user_metas', {'user': app.user.usernameCanonical }) }}">access your personal mod repository</a>.{% endif %}</p>
     <br/>
   </div>
 </div>

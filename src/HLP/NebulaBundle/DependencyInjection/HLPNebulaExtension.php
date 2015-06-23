@@ -24,23 +24,8 @@ class HLPNebulaExtension extends Extension
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
-        
-        if (!isset($config['knossos_server'])) {
-          throw new \InvalidArgumentException('The "knossos_server" option must be set');
-        }
 
-        $container->setParameter('server', $config['knossos_server']);
-        
-        if (!isset($config['knossos_apikey'])) {
-          throw new \InvalidArgumentException('The "knossos_apikey" option must be set');
-        }
-
-        $container->setParameter('key', $config['knossos_apikey']);
-        
-        if (!isset($config['knossos_secure'])) {
-          throw new \InvalidArgumentException('The "knossos_secure" option must be set');
-        }
-
-        $container->setParameter('secure', $config['knossos_secure']);
+        $container->setParameter('hlp_nebula.semver.pattern', $config['semver']['pattern']);
+        $container->setParameter('hlp_nebula.semver.nocap_pattern', $config['semver']['nocap_pattern']);
     }
 }

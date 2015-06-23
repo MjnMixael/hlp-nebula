@@ -4,6 +4,6 @@ services:
         calls:
             - [setRequest, [@request_stack]]
         
-    hlpnebula.knossos_server_connect:
+    hlp_nebula.knossos:
         class: HLP\NebulaBundle\KSConnect\KSConnect
-        arguments: ['%server%', '%key%', '%secure%']
+        arguments: ['%hlp_nebula.knossos.server%', '%hlp_nebula.knossos.apikey%', '%hlp_nebula.knossos.secure%']

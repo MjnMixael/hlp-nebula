@@ -42,10 +42,10 @@ hlp_nebula_ajax_mods:
     
 hlp_nebula_ajax_packages:
     path:     /ajax/{mod}/search_packages
-    defaults: { _controller: HLPNebulaBundle:AJAX:searchPacakgesInMeta }
+    defaults: { _controller: HLPNebulaBundle:AJAX:searchPackagesInMeta }
     
 # Nebula user public data routes
-    
+
 hlp_nebula_user_profile:
     path:     /user/{user}/profile
     defaults: { _controller: HLPNebulaBundle:User:showProfile }  

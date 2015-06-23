@@ -23,9 +23,15 @@
           <td><a href="{{ path('hlp_nebula_repository_build', {'meta': meta.metaId, 'branch': branch.branchId, 'build': build.version}) }}">{{ build.version }}</a></td>
           <td>{{ build.updated|date("d M Y") }}</td>
           <td>
-          {% if build.isReady %}<span class="text-success"><span class="glyphicon glyphicon-ok"></span>&nbsp;Validated</span>{% endif %}
-          {% if build.isFailed %}<span class="text-warning"><span class="glyphicon glyphicon-remove"></span>&nbsp;Failed</span>{% endif %}
-          {% if not build.isReady and not build.isFailed %}<span class="text-info"><span class="glyphicon glyphicon-cog"></span>&nbsp;Processing...</span>{% endif %}
+            {% if build.state == constant('HLP\\NebulaBundle\\Entity\\Build::DONE') %}
+              <span class="text-success"><span class="glyphicon glyphicon-ok"></span>&nbsp;Validated</span>
+            {% elseif build.state == constant('HLP\\NebulaBundle\\Entity\\Build::FAILED') %}
+              <span class="text-warning"><span class="glyphicon glyphicon-remove"></span>&nbsp;Failed</span>
+            {% elseif build.state == constant('HLP\\NebulaBundle\\Entity\\Build::PROCESSING') %}
+              <span class="text-info"><span class="glyphicon glyphicon-cog"></span>&nbsp;Processing...</span>
+            {% else %}
+              <span class="text-danger">INVALID STATE!</span>
+            {% endif %}
           </td>
           {% if is_granted('EDIT', meta) %}
             <td>

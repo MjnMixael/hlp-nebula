@@ -32,6 +32,13 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class BuildType extends AbstractType
 {
+    private $semver_pattern;
+
+    public function __construct($semver_pattern)
+    {
+        $this->semver_pattern = $semver_pattern;
+    }
+
     /**
      * @param FormBuilderInterface $builder
      * @param array $options
@@ -39,11 +46,7 @@ class BuildType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('versionMajor',       'integer')
-            ->add('versionMinor',       'integer')
-            ->add('versionPatch',       'integer')
-            ->add('versionPreRelease',  'text',     array('required' => false))
-            ->add('versionMetadata',    'text',     array('required' => false))
+            ->add('version', 'text', array('pattern' => $this->semver_pattern))
             ->add('notes',              'textarea', array('required' => false))
             ->add('folder',             'text',     array('required' => false))
             ->add('packages',           'collection', array(

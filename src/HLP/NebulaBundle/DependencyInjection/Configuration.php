@@ -18,16 +18,21 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('hlp_nebula')
-            ->children()
-                ->scalarNode('knossos_server')->end()
-                ->scalarNode('knossos_apikey')->end()
-                ->scalarNode('knossos_secure')->end()
-        ->end();
+        $rootNode = $treeBuilder->root('hlp_nebula');
 
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
+        $rootNode->children()
+            ->arrayNode('semver')
+                ->isRequired()
+                ->children()
+                    ->scalarNode('pattern')
+                        ->isRequired()
+                    ->end()
+                    ->scalarNode('nocap_pattern')
+                        ->isRequired()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
 
         return $treeBuilder;
     }

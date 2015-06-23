@@ -147,19 +147,12 @@ class Build
     private $updated;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="isReady", type="boolean")
+     * @ORM\Column(name="state", type="integer")
      */
-    private $isReady;
+    private $state;
 
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="isFailed", type="boolean")
-     */
-    private $isFailed;
-    
     /**
      * @var string
      *
@@ -187,6 +180,8 @@ class Build
      * @ORM\Column(name="notes", type="text", nullable=true)
      */
     private $notes;
+
+    private $semver_pattern;
     
     /**
      * @var string
@@ -199,6 +194,11 @@ class Build
      * )
      */
     private $folder;
+
+    const WAITING = 0;
+    const PROCESSING = 1;
+    const DONE = 2;
+    const FAILED = 3;
 
     /**
      * Get id
@@ -349,49 +349,26 @@ class Build
     }
 
     /**
-     * Set isReady
+     * Set state
      *
-     * @param boolean $isReady
+     * @param integer $state
      * @return Build
      */
-    public function setIsReady($isReady)
+    public function setState($state)
     {
-        $this->isReady = $isReady;
+        $this->state = $state;
 
         return $this;
     }
 
     /**
-     * Get isReady
+     * Get state
      *
-     * @return boolean 
+     * @return integer 
      */
-    public function getIsReady()
+    public function getState()
     {
-        return $this->isReady;
-    }
-
-    /**
-     * Set isFailed
-     *
-     * @param boolean $isFailed
-     * @return Build
-     */
-    public function setIsFailed($isFailed)
-    {
-        $this->isFailed = $isFailed;
-
-        return $this;
-    }
-
-    /**
-     * Get isFailed
-     *
-     * @return boolean 
-     */
-    public function getIsFailed()
-    {
-        return $this->isFailed;
+        return $this->state;
     }
 
     /**
@@ -507,9 +484,6 @@ class Build
     {
          if ($this->id) {
             $this->id = null;
-            $this->versionPatch++;
-            $this->versionPreRelease = null;
-            $this->versionMetadata = null;
             $this->isReady = false;
             $this->isFailed = false;
             $this->generatedJSON = null;
@@ -717,10 +691,31 @@ class Build
     public function getVersion()
     {
         if ($this->version == null) {
-            $this->setVersion();
+            $this->_combineVersion();
         }
         
         return $this->version;
+    }
+
+    public function setVersion($version)
+    {
+        if(!preg_match('/' . $this->semver_pattern . '/', $version, $m)) return;
+
+        $this->versionMajor = intval($m[1]);
+        $this->versionMinor = intval($m[2]);
+        $this->versionPatch = intval($m[3]);
+        $this->versionPreRelease = (isset($m[4]) ? $m[4] : null);
+        $this->versionMetadata = (isset($m[5]) ? $m[5] : null);
+
+        $this->version = null;
+        $this->_combineVersion();
+
+        return $this;
+    }
+
+    public function setSemverPattern($pattern)
+    {
+        $this->semver_pattern = $pattern;
     }
     
     /**
@@ -730,7 +725,7 @@ class Build
      *
      * @ORM\PrePersist
      */
-    public function setVersion()
+    public function _combineVersion()
     {
         if ($this->version == null) {
             $this->version = $this->versionMajor.'.'.$this->versionMinor.'.'.$this->versionPatch;

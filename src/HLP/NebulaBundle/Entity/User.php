@@ -39,99 +39,99 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 class User extends BaseUser
 {
     /**
-     * @ORM\ManyToMany(targetEntity="Meta", inversedBy="users")
-     * @ORM\JoinTable(name="hlp_nebula_user_meta")
-     **/
+    * @ORM\ManyToMany(targetEntity="Meta", inversedBy="users")
+    * @ORM\JoinTable(name="hlp_nebula_user_meta")
+    **/
     private $metas;
-  
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="integer")
-   * @ORM\GeneratedValue(strategy="AUTO")
-   */
-  protected $id;
-  
-  /**
-   * @var \DateTime
-   *
-   * @ORM\Column(name="joined", type="datetime")
-   */
-  private $joined;
-  
-  /**
-   * Constructor
-   */
-  public function __construct()
-  {
-      parent::__construct();
-      
-      $this->metas = new \Doctrine\Common\Collections\ArrayCollection();
 
-      $this->joined = new \Datetime;
-  }
-  
-  public function __toString()
-  {
-      return $this->usernameCanonical;
-  }
-
-  /**
-   * Get id
-   *
-   * @return integer 
-   */
-  public function getId()
-  {
-      return $this->id;
-  }
-
-  /**
-   * Set joined
-   *
-   * @param \DateTime $joined
-   * @return User
-   */
-  public function setJoined($joined)
-  {
-      $this->joined = $joined;
-
-      return $this;
-  }
-
-  /**
-   * Get joined
-   *
-   * @return \DateTime 
-   */
-  public function getJoined()
-  {
-      return $this->joined;
-  }
-    
     /**
-     * @Assert\Callback
-     * Need to change this to avoid team name duplicates
-     */
-    public function forbiddenWords(ExecutionContextInterface $context)
+    * @ORM\Id
+    * @ORM\Column(type="integer")
+    * @ORM\GeneratedValue(strategy="AUTO")
+    */
+    protected $id;
+
+    /**
+    * @var \DateTime
+    *
+    * @ORM\Column(name="joined", type="datetime")
+    */
+    private $joined;
+
+    /**
+    * Constructor
+    */
+    public function __construct()
     {
-      $forbiddenWords = Array('test');
-      
-      if(in_array($this->usernameCanonical, $forbiddenWords)) {
-        $context->addViolationAt(
-            'usernameCanonical',
-            'Username is a forbidden word ("'.$this->usernameCanonical.'") !',
-            array(),
-            null
-            );
-       }
+        parent::__construct();
+
+        $this->metas = new \Doctrine\Common\Collections\ArrayCollection();
+
+        $this->joined = new \Datetime;
+    }
+
+    public function __toString()
+    {
+        return $this->usernameCanonical;
     }
 
     /**
-     * Add metas
-     *
-     * @param \HLP\NebulaBundle\Entity\Meta $metas
-     * @return User
-     */
+    * Get id
+    *
+    * @return integer 
+    */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+    * Set joined
+    *
+    * @param \DateTime $joined
+    * @return User
+    */
+    public function setJoined($joined)
+    {
+        $this->joined = $joined;
+
+        return $this;
+    }
+
+    /**
+    * Get joined
+    *
+    * @return \DateTime 
+    */
+    public function getJoined()
+    {
+        return $this->joined;
+    }
+
+    /**
+    * @Assert\Callback
+    * Need to change this to avoid team name duplicates
+    */
+    public function forbiddenWords(ExecutionContextInterface $context)
+    {
+        $forbiddenWords = array('test');
+
+        if(in_array($this->usernameCanonical, $forbiddenWords)) {
+            $context->addViolationAt(
+                'usernameCanonical',
+                'Username is a forbidden word ("'.$this->usernameCanonical.'") !',
+                array(),
+                null
+            );
+        }
+    }
+
+    /**
+    * Add metas
+    *
+    * @param \HLP\NebulaBundle\Entity\Meta $metas
+    * @return User
+    */
     public function addMeta(\HLP\NebulaBundle\Entity\Meta $metas)
     {
         $this->metas[] = $metas;
@@ -140,20 +140,20 @@ class User extends BaseUser
     }
 
     /**
-     * Remove metas
-     *
-     * @param \HLP\NebulaBundle\Entity\Meta $metas
-     */
+    * Remove metas
+    *
+    * @param \HLP\NebulaBundle\Entity\Meta $metas
+    */
     public function removeMeta(\HLP\NebulaBundle\Entity\Meta $metas)
     {
         $this->metas->removeElement($metas);
     }
 
     /**
-     * Get metas
-     *
-     * @return \Doctrine\Common\Collections\Collection 
-     */
+    * Get metas
+    *
+    * @return \Doctrine\Common\Collections\Collection 
+    */
     public function getMetas()
     {
         return $this->metas;

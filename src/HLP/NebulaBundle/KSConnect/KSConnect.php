@@ -32,7 +32,7 @@ class KSConnect
   
   protected $retrieveURL;
   
-  protected $converterURL;
+  protected $scriptURL;
   
   protected $wsURL;
   
@@ -42,17 +42,18 @@ class KSConnect
   
   public function __construct($server, $APIkey, $secure)
   {
-    $s = '';
-    
     if($secure)
     {
-      $s = 's';
+      $urlBase = 'https://' . $server;
+      $wsBase = 'wss://' . $server;
+    } else {
+      $urlBase = 'http://' . $server;
+      $wsBase = 'ws://' . $server;
     }
     
-    $this->sendURL = 'http'.$s.'://'.$server.'/api/converter/request';
-    $this->retrieveURL = 'http'.$s.'://'.$server.'/api/converter/retrieve';
-    $this->converterURL = 'http'.$s.'://'.$server.'/static/converter.js';
-    $this->wsURL = 'ws'.$s.'://'.$server.'/ws/converter';
+    $this->apiURL = $urlBase . '/api';
+    $this->scriptURL = $urlBase . '/static/converter.js';
+    $this->wsURL = $wsBase . '/ws/converter';
     
     $this->APIkey = $APIkey;
     
@@ -61,9 +62,9 @@ class KSConnect
     curl_setopt($this->ksconn, CURLOPT_RETURNTRANSFER, true);
   }
   
-  public function getConverterURL()
+  public function getScriptURL()
   {
-    return $this->converterURL;
+    return $this->scriptURL;
   }
   
   public function getWsURL()
@@ -71,47 +72,30 @@ class KSConnect
     return $this->wsURL;
   }
   
-  public function sendData($data, $webhook)
+  public function requestConversion($data, $webhook)
   {
-    $fields = array(
-			  'passwd'  => $this->APIkey, 
-			  'data'    => $data,
-			  'webhook' => $webhook
-	  );
-	  
-	  $fields_string = '';
-	  foreach($fields as $key=>$value)
-    {
-      $fields_string .= $key.'='.urlencode($value).'&';
-    }
-    $fields_string = rtrim($fields_string, '&');
-	  
-	  curl_setopt($this->ksconn, CURLOPT_URL, $this->sendURL);
-    curl_setopt($this->ksconn, CURLOPT_POST, count($fields));
-    curl_setopt($this->ksconn, CURLOPT_POSTFIELDS, $fields_string);
-    
-    return curl_exec($this->ksconn);
+    return $this->_callApi('request', array(
+        'passwd'  => $this->APIkey, 
+        'data'    => $data,
+        'webhook' => $webhook
+    ));
   }
   
-  public function retrieveData($ticket, $token)
+  public function retrieveConverted($ticket, $token)
   {
-    $fields = array(
+    return $this->_callApi('retrieve', array(
 			  'ticket' => $ticket, 
 			  'token'  => $token,
-	  );
-	  
-	  $fields_string = '';
-	  foreach($fields as $key=>$value)
-    {
-      $fields_string .= $key.'='.urlencode($value).'&';
-    }
-    $fields_string = rtrim($fields_string, '&');
-	  
-	  curl_setopt($this->ksconn, CURLOPT_URL, $this->retrieveURL);
+	  ));
+  }
+
+  protected function _callApi($method, $fields)
+  {
+    curl_setopt($this->ksconn, CURLOPT_URL, $this->apiURL . '/' . $method);
     curl_setopt($this->ksconn, CURLOPT_POST, count($fields));
-    curl_setopt($this->ksconn, CURLOPT_POSTFIELDS, $fields_string);
+    curl_setopt($this->ksconn, CURLOPT_POSTFIELDS, http_build_query($fields));
     
-    return curl_exec($this->ksconn);
+    return json_decode(curl_exec($this->ksconn));
   }
   
   public function __destruct()

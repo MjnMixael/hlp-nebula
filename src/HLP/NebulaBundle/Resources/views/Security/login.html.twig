@@ -1,0 +1,61 @@
+{% extends "HLPNebulaBundle::layout.html.twig" %}
+{% trans_default_domain 'FOSUserBundle' %}
+
+{% block title %}
+    Login
+{% endblock title %}
+
+{% block body %}
+    {# On affiche les messages flash que définissent les contrôleurs du bundle #}
+    {% for key, messages in app.session.flashbag.all() %}
+      {% for message in messages %}
+        <div class="alert alert-info">
+            {{ message|trans({}, 'FOSUserBundle') }}
+        </div>
+
+      {% endfor %}
+    {% endfor %}
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+    {% endif %}
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <form action="{{ path("fos_user_security_check") }}" method="post" class="simple-form">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+                <div class="form-group">
+                    <label for="username">{{ 'security.login.username'|trans }}</label>
+                    <div class="field">
+                        <input type="text" id="username" name="_username" value="{{ last_username }}" required="required">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">{{ 'security.login.password'|trans }}</label>
+                    <div class="field">
+                        <input type="password" id="password" name="_password" required="required">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="nl-field">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="remember_me" name="_remember_me" value="on">
+                                {{ 'security.login.remember_me'|trans }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="nl-field">
+                        <input type="submit" class="btn btn-primary" id="_submit" name="_submit" value="{{ 'security.login.submit'|trans }}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock body %}

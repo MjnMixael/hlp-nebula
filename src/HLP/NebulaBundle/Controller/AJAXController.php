@@ -32,42 +32,24 @@ use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-use HLP\NebulaBundle\Entity\FSMod;
-use HLP\NebulaBundle\Entity\Branch;
-use HLP\NebulaBundle\Entity\Build;
-use HLP\NebulaBundle\Entity\Package;
-
 class AJAXController extends Controller
 {
   public function searchModsAction(Request $request)
   {
     if($request->isXmlHttpRequest())
     {
-
-      $em = $this->getDoctrine()->getManager();
-      $term = '';
       $term = $request->query->get('term');
-      if($term != '')
-      {
-        $qb = $em->createQueryBuilder();
+      $data = array();
 
-        $qb->select('m')
-          ->from('HLPNebulaBundle:FSMod', 'm')
-          ->where("m.modId LIKE :keyword")
-          ->orderBy('m.modId', 'ASC')
-          ->setParameter('keyword', '%'.$term.'%');
-
-        $query = $qb->getQuery();               
-        $mods = $query->getResult();
-      }
-      else {
-        $mods = null;
-      }
-      
-      $data = Array();
-      foreach($mods as $mod)
+      if(!empty($term))
       {
-        $data[] = $mod->getModId();
+        $metas = $this->getDoctrine()->getManager()
+          ->getRepository('HLPNebulaBundle:Meta')->searchMetas($term);
+
+        foreach($mods as $mod)
+        {
+          $data[] = $mod->getModId();
+        }
       }
       
       $response = new JsonResponse();
@@ -78,42 +60,21 @@ class AJAXController extends Controller
     }
     else
     {
-      return $this->redirect($this->generateUrl('hlp_nebula_homepage'));
+      return $this->redirect('/');
     }
   }
   
-  public function searchPacakgesInModAction(Request $request, $mod)
+  public function searchPackagesInModAction(Request $request, $meta)
   {
     if($request->isXmlHttpRequest())
     {
 
       $em = $this->getDoctrine()->getManager();
-      $term = '';
       $term = $request->query->get('term');
       
+      $packages = $em->getRepository('HLPNebulaBundle:Package')->searchByMetaAndTerm($meta, $term);
       
-      $qb = $em->createQueryBuilder();
-
-      $qb->from('HLPNebulaBundle:Package', 'p')
-          ->select('p')
-          ->leftJoin('p.build', 'u')
-          ->leftJoin('u.branch', 'b')
-          ->leftJoin('b.mod', 'm')
-          ->where("m.modId = :modId")
-          ->orderBy('p.name', 'ASC')
-          ->setParameter('modId', $mod);
- 
-      if($term != '')
-      {
-      
-      $qb->andWhere("p.name LIKE :keyword")
-         ->setParameter('keyword', '%'.$term.'%');
-      }
-      
-      $query = $qb->getQuery();               
-      $packages = $query->getResult();
-      
-      $data = Array();
+      $data = array();
       foreach($packages as $package)
       {
         $data[] = $package->getName();
@@ -127,7 +88,7 @@ class AJAXController extends Controller
     }
     else
     {
-      return $this->redirect($this->generateUrl('hlp_nebula_homepage'));
+      return $this->redirect('/');
     }
   }
 }

@@ -380,10 +380,10 @@ class Meta
      * @param \HLP\NebulaBundle\Entity\Author $authors
      * @return Meta
      */
-    public function addAuthor(\HLP\NebulaBundle\Entity\Author $authors)
+    public function addAuthor(\HLP\NebulaBundle\Entity\Author $author)
     {
-        $this->authors[] = $authors;
-        $authors->setMeta($this);
+        $this->authors[] = $author;
+        $author->setMeta($this);
         return $this;
     }
 
@@ -392,10 +392,10 @@ class Meta
      *
      * @param \HLP\NebulaBundle\Entity\Author $authors
      */
-    public function removeAuthor(\HLP\NebulaBundle\Entity\Author $authors)
+    public function removeAuthor(\HLP\NebulaBundle\Entity\Author $author)
     {
-        $this->authors->removeElement($authors);
-        $authors->setMeta(null);
+        $this->authors->removeElement($author);
+        $author->setMeta(null);
     }
 
     /**

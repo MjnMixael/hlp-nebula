@@ -164,10 +164,14 @@ class MetaController extends Controller
 
             $em->flush();
 
+            /*
+            // TODO: Add proper escaping!
             $request->getSession()
                   ->getFlashBag()
                   ->add('success', 'New mod <strong>"'.$meta->getTitle().'" (id: '.$meta->getMetaId().')</strong> successfully created.<br/><hr/>A default branch has been created for this mod : <strong>"'.$defaultBranch->getName().'" (id: '.$defaultBranch->getBranchId().')</strong>.');
-                  
+            */
+            
+            // TODO: Maybe this should be moved into a method of Meta?
             // création de l'ACL
             $aclProvider = $this->get('security.acl.provider');
             $objectIdentity = ObjectIdentity::fromDomainObject($meta);

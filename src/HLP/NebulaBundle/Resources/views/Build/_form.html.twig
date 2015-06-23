@@ -8,11 +8,11 @@
   <h4><span class="glyphicon glyphicon-asterisk"></span> Build details</h4>
   <hr/>
   <div class="form-group">
-    {{ form_label(form.versionMajor, "Version*") }}
+    {{ form_label(form.version, "Version*") }}
     <p class="help-block">
       A build version number must be unique <em>in this branch of your mod</em>. Use <a target="_blank" href='http://semver.org/'>Semantic Versioning <span class="glyphicon glyphicon-link"></span></a>.
     </p>
-    {{ form_errors(form.versionMajor) }}
+    {# {{ form_errors(form.versionMajor) }}
     {{ form_errors(form.versionMinor) }}
     {{ form_errors(form.versionPatch) }}
     {{ form_errors(form.versionPreRelease) }}
@@ -28,7 +28,9 @@
       {{ form_widget(form.versionPreRelease, { 'attr': {'style': 'width: 95px;', 'pattern':'^[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*$'} }) }}&#160;
       {{ form_label(form.versionMetadata, "Metadata : ") }}
       {{ form_widget(form.versionMetadata, { 'attr': {'style': 'width: 95px;', 'pattern':'^[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*$'} }) }}
-    </div>
+    </div> #}
+    {{ form_errors(form.version) }}
+    {{ form_widget(form.version) }}
   </div>
   <div class="form-group">
     {{ form_label(form.notes, "Notes") }}

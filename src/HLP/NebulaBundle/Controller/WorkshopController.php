@@ -46,10 +46,10 @@ class WorkshopController extends Controller
     $repository = $this
       ->getDoctrine()
       ->getManager()
-      ->getRepository('HLPNebulaBundle:FSMod')
+      ->getRepository('HLPNebulaBundle:Meta')
     ;
     
-    $modsList = $repository->findAllModsWithOwners();
+    $modsList = $repository->findAll();
     
     return $this->render('HLPNebulaBundle:AdvancedUI:all_mods.html.twig', array(
       'modsList'  => $modsList
@@ -64,7 +64,7 @@ class WorkshopController extends Controller
       ->getRepository('HLPNebulaBundle:User')
     ;
     
-    $moddersList = $repository->findAllUsersWithMods();
+    $moddersList = $repository->findAll();
     
     return $this->render('HLPNebulaBundle:AdvancedUI:all_modders.html.twig', array(
       'moddersList'  => $moddersList

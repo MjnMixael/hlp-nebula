@@ -36,4 +36,22 @@ use Doctrine\ORM\EntityRepository;
  */
 class PackageRepository extends EntityRepository
 {
+    public function searchByMetaAndTerm($metaId, $term)
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.build', 'u')
+            ->leftJoin('u.branch', 'b')
+            ->leftJoin('b.mod', 'm')
+            ->where('m.modId = :modId')
+            ->orderBy('p.name', 'ASC')
+            ->setParameter('modId', $metaId);
+        
+        if(!empty($term))
+        {
+            $qb->andWhere('p.name LIKE :keyword')
+                ->setParameter('keyword', '%'.$term.'%');
+        }
+        
+        return $qb->getQuery()->getResult();
+    }
 }

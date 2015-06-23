@@ -51,13 +51,16 @@ class BuildController extends Controller
     public function createAction(Request $request, Branch $branch)
     {
         $build = new Build;
+        $semver_pat = $this->container->getParameter('hlp_nebula.semver.pattern');
+        $build->setSemverPattern($semver_pat);
 
-        $form = $this->createForm(new BuildType(), $build);
+        $form = $this->createForm(new BuildType($semver_pat), $build);
 
         $form->handleRequest($request);
 
         if ($form->isValid())
         {
+            $build->setStatus(Build::WAITING);
             $branch->addBuild($build);
             
             $em = $this->getDoctrine()
@@ -66,11 +69,11 @@ class BuildController extends Controller
             $em->persist($build);
             $em->flush();
 
-            $request->getSession()
-                ->getFlashBag()
-                ->add('success', 'New build <strong>version '.$build->getVersion().'</strong> successfully created.');
+            // $request->getSession()
+            //     ->getFlashBag()
+            //     ->add('success', 'New build <strong>version '.$build->getVersion().'</strong> successfully created.');
 
-            return $this->redirect($this->generateUrl('hlp_nebula_repository_build', array(
+            return $this->redirect($this->generateUrl('hlp_nebula_repository_build_details', array(
                 'meta'   => $build->getMeta(),
                 'branch' => $build->getBranch(),
                 'build'  => $build
@@ -251,14 +254,13 @@ class BuildController extends Controller
   public function processAction(Build $build)
   {
     $branch = $build->getBranch();
-    $mod = $branch->getMod();
-    $owner = $mod->getOwner();
+    $meta = $branch->getMeta();
     
     if (false === $this->get('security.context')->isGranted('add', $owner)) {
         throw new AccessDeniedException('Unauthorised access!');
     }
     
-    if(($build->getIsFailed() == false) && ($build->getIsReady() == false))
+    if($build->getStatus() <= Build::PROCESSING)
     {
       if($build->getConverterTicket() == null)
       {
@@ -272,17 +274,17 @@ class BuildController extends Controller
                    ->get('hlpnebula.knossos_server_connect');
                    
         $webhook = $this->generateUrl('hlp_nebula_process_finalise', array(
-            'owner'  => $owner,
             'mod'    => $mod,
             'branch' => $branch,
             'build'  => $build
         ), true);
         
-        $ksresponse = json_decode($ks->sendData($data, $webhook));
+        $ksresponse = json_decode($ks->requestConversion($data, $webhook));
         
         
         if($ksresponse)
         {
+          $build->setStatus(Build::PROCESSING);
           $build->setConverterToken($ksresponse->token);
           $build->setConverterTicket($ksresponse->ticket);
           
@@ -294,8 +296,7 @@ class BuildController extends Controller
         else
         {
           return $this->render('HLPNebulaBundle:AdvancedUI:process_error.html.twig', array(
-            'owner'         => $owner,
-            'mod'           => $mod,
+            'meta'          => $meta,
             'branch'        => $branch,
             'build'         => $build
           ));
@@ -305,19 +306,17 @@ class BuildController extends Controller
       $ksticket = $build->getConverterTicket();
       
       return $this->render('HLPNebulaBundle:AdvancedUI:process_build.html.twig', array(
-        'owner'         => $owner,
-        'mod'           => $mod,
-        'branch'        => $branch,
-        'build'         => $build,
-        'ksticket'      => $ksticket,
-        'converter_url' => $ks->getConverterURL(),
-        'ws_url'        => $ks->getWsURL()
+        'meta'             => $meta,
+        'branch'           => $branch,
+        'build'            => $build,
+        'ksticket'         => $ksticket,
+        'converter_script' => $ks->getScriptURL(),
+        'ws_url'           => $ks->getWsURL()
       ));
     }
     
-    return $this->redirect($this->generateUrl('hlp_nebula_build', array(
-        'owner'  => $owner,
-        'mod'    => $mod,
+    return $this->redirect($this->generateUrl('hlp_nebula_build_details', array(
+        'meta'   => $meta,
         'branch' => $branch,
         'build'  => $build
     )));
@@ -326,17 +325,16 @@ class BuildController extends Controller
   public function processFinaliseAction(Request $request, Build $build)
   {
     $branch = $build->getBranch();
-    $mod = $branch->getMod();
-    $owner = $mod->getOwner();
+    $meta = $branch->getMeta();
     
-    if(($build->getIsFailed() == false) && ($build->getIsReady() == false))
+    if($build->getStatus() == Build::PROCESSING)
     {
       if($build->getConverterTicket() != null)
       {
         $ks = $this->container
                    ->get('hlpnebula.knossos_server_connect');
         
-        $ksresponse = json_decode($ks->retrieveData($build->getConverterTicket(), $build->getConverterToken()));
+        $ksresponse = json_decode($ks->retrieveConverted($build->getConverterTicket(), $build->getConverterToken()));
         
         if($ksresponse)
         {
@@ -345,14 +343,14 @@ class BuildController extends Controller
             if($ksresponse->success == true)
             {
               $build->setGeneratedJSON($ksresponse->json);
-              $build->setIsReady(true);
+              $build->setStatus(Build::DONE);
               $request->getSession()
                       ->getFlashBag()
                       ->add('success', "Build <strong>version ".$build->getVersion()."</strong> has been successfully validated.");
             }
             else
             {
-              $build->setIsFailed(true);
+              $build->setStatus(Build::FAILED);
               $request->getSession()
                       ->getFlashBag()
                       ->add('warning', "Build <strong>version ".$build->getVersion()."</strong> validation has failed.");
@@ -366,8 +364,7 @@ class BuildController extends Controller
           else
           {
             return $this->redirect($this->generateUrl('hlp_nebula_process', array(
-                'owner'  => $owner,
-                'mod'    => $mod,
+                'meta'   => $meta,
                 'branch' => $branch,
                 'build'  => $build
             )));
@@ -376,8 +373,7 @@ class BuildController extends Controller
         else
         {
           return $this->render('HLPNebulaBundle:AdvancedUI:process_error.html.twig', array(
-            'owner'  => $owner,
-            'mod'    => $mod,
+            'meta'   => $meta,
             'branch' => $branch,
             'build'  => $build,
           ));
@@ -387,7 +383,7 @@ class BuildController extends Controller
     
     if($request->getMethod() == 'POST')
     {      
-      $response = new Response(json_encode(array('cancelled' => $build->getIsFailed())));
+      $response = new Response(json_encode(array('cancelled' => $build->getStatus() == Build::FAILED)));
       $response->headers
                ->set('Content-Type', 'application/json');
                
@@ -395,8 +391,7 @@ class BuildController extends Controller
     }
     
     return $this->redirect($this->generateUrl('hlp_nebula_build', array(
-        'owner'  => $owner,
-        'mod'    => $mod,
+        'meta'   => $meta,
         'branch' => $branch,
         'build'  => $build
     )));
@@ -405,8 +400,7 @@ class BuildController extends Controller
   public function processForceFailAction(Request $request, Build $build)
   {
     $branch = $build->getBranch();
-    $mod = $branch->getMod();
-    $owner = $mod->getOwner();
+    $meta = $branch->getMeta();
     
     if (false === $this->get('security.context')->isGranted('add', $owner)) {
         throw new AccessDeniedException('Unauthorised access!');
@@ -428,8 +422,7 @@ class BuildController extends Controller
     }
     
     return $this->redirect($this->generateUrl('hlp_nebula_build', array(
-        'owner'  => $owner,
-        'mod'    => $mod,
+        'meta'   => $meta,
         'branch' => $branch,
         'build'  => $build
     )));
@@ -438,8 +431,7 @@ class BuildController extends Controller
   public function deleteAction(Request $request, Build $build)
   {
     $branch = $build->getBranch();
-    $mod = $branch->getMod();
-    $owner = $mod->getOwner();
+    $meta = $branch->getMeta();
 
     if (false === $this->get('security.context')->isGranted('add', $owner)) {
         throw new AccessDeniedException('Unauthorised access!');
@@ -461,15 +453,13 @@ class BuildController extends Controller
               ->add('success', "Build <strong>version ".$build->getVersion()."</strong> has been deleted.");
 
       return $this->redirect($this->generateUrl('hlp_nebula_branch', array(
-        'owner'  => $owner,
-        'mod'    => $mod,
+        'meta'   => $meta,
         'branch' => $branch
       )));
     }
 
     return $this->render('HLPNebulaBundle:AdvancedUI:delete_build.html.twig', array(
-      'owner'  => $owner,
-      'mod'    => $mod,
+      'meta'   => $meta,
       'branch' => $branch,
       'build'  => $build,
       'form'   => $form->createView()
