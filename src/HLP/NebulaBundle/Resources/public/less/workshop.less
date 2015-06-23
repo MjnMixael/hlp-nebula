@@ -1,0 +1,89 @@
+//@import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css);
+@import "bootstrap/bootstrap.less";
+@import (inline) "bootstrap-theme.css";
+
+body {
+  padding-top: 70px;
+  padding-bottom: 30px;
+}
+
+.mainTabs {
+  margin-top: 15px;
+  margin-bottom:15px;
+}
+
+.mainForm {
+  margin-top: 15px;
+  margin-left:25px;
+  margin-right:25px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-control:focus:valid {
+  border-color: #a4e966;
+  outline: 0;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(164, 233, 102, .6);
+          box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(164, 233, 102, .6);
+}
+
+.form-control:focus:invalid {
+  border-color: #e96666;
+  outline: 0;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(233, 102, 102, .6);
+          box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(233, 102, 102, .6);
+}
+
+.titletab {
+  margin-top: 2px;
+  margin-bottom: 3px;
+}
+
+.cardspacer {
+  padding-right: 2px;
+  padding-left: 2px;
+}
+
+.form-ph {
+ height:200px;
+ padding-top:50px;
+}
+
+.nospacer {
+  padding-right: 0px;
+  padding-left: 0px;
+}
+
+.dynlistItem {
+  margin-bottom: 3px;
+}
+
+.card-hr {
+  margin: 5px;
+}
+
+
+.simple-form {
+    &:extend(.form-horizontal all);
+
+    input[type=text], input[type=password] {
+        &:extend(.form-control all);
+    }
+
+    .form-group > label {
+        &:extend(.form-horizontal .control-label all);
+        .make-sm-column(3);
+    }
+
+    .field {
+        .make-sm-column(5);
+    }
+
+    .nl-field {
+        .make-sm-column(5);
+        .make-sm-column-offset(3);
+    }
+}

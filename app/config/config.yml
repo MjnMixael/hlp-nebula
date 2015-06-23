@@ -33,10 +33,13 @@ twig:
 assetic:
     debug:          "%kernel.debug%"
     use_controller: false
-    bundles:        ["HLPNebulaBundle" ]
+    bundles:        ["HLPNebulaBundle"]
     #java: /usr/bin/java
     filters:
         cssrewrite: ~
+        uglifyjs2: ~
+        #less:
+        #    node_paths: ['/usr/lib/node_modules']
         #closure:
         #    jar: "%kernel.root_dir%/Resources/java/compiler.jar"
         #yui_css:
@@ -78,10 +81,10 @@ fos_user:
         confirmation:
             enabled:    true
     from_email:
-        address:        noreply@hlp-nebula.org
+        address:        noreply@fsnebula.org
         sender_name:    Nebula
 
 hlp_nebula:
-    knossos_server: "%hlp_nebula_knossos_server%"
-    knossos_apikey: "%hlp_nebula_knossos_apikey%"
-    knossos_secure: "%hlp_nebula_knossos_secure%"
+    semver:
+        pattern: "^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-\.]+))?(?:\+([0-9A-Za-z-\.]+))?$"
+        nocap_pattern: "^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-\.]+)?(\+[0-9A-Za-z-\.]+)?$"
