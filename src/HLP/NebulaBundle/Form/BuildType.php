@@ -29,16 +29,10 @@ namespace HLP\NebulaBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Ngld\CommonBundle\DependencyInjection\ContainerRef;
 
 class BuildType extends AbstractType
 {
-    private $semver_pattern;
-
-    public function __construct($semver_pattern)
-    {
-        $this->semver_pattern = $semver_pattern;
-    }
-
     /**
      * @param FormBuilderInterface $builder
      * @param array $options
@@ -46,7 +40,7 @@ class BuildType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('version', 'text', array('pattern' => $this->semver_pattern))
+            ->add('version', 'text', array('pattern' => ContainerRef::get()->getParameter('hlp_nebula.semver.nocap_pattern')))
             ->add('notes',              'textarea', array('required' => false))
             ->add('folder',             'text',     array('required' => false))
             ->add('packages',           'collection', array(

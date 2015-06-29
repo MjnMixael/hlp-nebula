@@ -48,8 +48,7 @@ class BuildRepository extends EntityRepository
             ->andWhere('u.version = :version')
             ->setParameter('meta', $parameters['meta'])
             ->setParameter('branch', $parameters['branch'])
-            ->setParameter('version', $parameters['version'])
-        ;
+            ->setParameter('version', $parameters['version']);
         
         return $queryBuilder->getQuery()
             ->getOneOrNullResult();
@@ -61,94 +60,53 @@ class BuildRepository extends EntityRepository
             ->leftJoin('u.branch', 'b')
             ->where('b = :branch')
             ->setParameter('branch', $branch)
-            ->getQuery()
-        ;
+            ->getQuery();
 
         $query
             ->setFirstResult(($page-1) * $nbPerPage)
-            ->setMaxResults($nbPerPage)
-        ;
+            ->setMaxResults($nbPerPage);
 
         return new Paginator($query, true);
     }
     
-  public function findSingleBuild($ownerNameCanonical, $modId, $branchId = null, $versionMajor = null, $versionMinor = null, $versionPatch = null, $versionPreRelease = null, $versionMetadata = null)
-  {
-    $qb = $this->_em->createQueryBuilder();
-    $qb->select('u')
-       ->from('HLPNebulaBundle:Build', 'u')
-       ->leftJoin('u.branch', 'b')
-       ->addSelect('b')
-       ->leftJoin('b.mod', 'm')
-       ->addSelect('m')
-       ->leftJoin('m.userAsOwner', 'uo')
-       ->addSelect('uo')
-       ->leftJoin('m.teamAsOwner', 'to')
-       ->addSelect('to')
-       ->leftJoin('u.packages', 'p')
-       ->addSelect('p')
-       ->leftJoin('u.actions', 'a')
-       ->addSelect('a')
-       ->leftJoin('p.envVars', 'e')
-       ->addSelect('e')
-       ->leftJoin('p.dependencies', 'd')
-       ->addSelect('d')
-       ->leftJoin('p.files', 'f')
-       ->addSelect('f')
-       ->where('uo.usernameCanonical = :nameCanonical OR to.nameCanonical = :nameCanonical')
-       ->andWhere('m.modId = :modId')
-       ->setParameter('nameCanonical', $ownerNameCanonical)
-       ->setParameter('modId', $modId);
-       
-    if(isset($branchId))
+    public function findSingleBuild($metaId, $branchId = null, $version = null)
     {
-      $qb->andWhere('b.branchId = :branchId')
-         ->setParameter('branchId', $branchId);
-    }
-    else
-    {
-      $qb->andWhere('b.isDefault = true');
-    }
-       
-    if(isset($versionMajor) && isset($versionMinor) && isset($versionPatch))
-    {
-      $qb->andWhere('u.versionMajor = :versionMajor')
-         ->andWhere('u.versionMinor = :versionMinor')
-         ->andWhere('u.versionPatch = :versionPatch')
-         ->setParameter('versionMajor', (int) $versionMajor)
-         ->setParameter('versionMinor', (int) $versionMinor)
-         ->setParameter('versionPatch', (int) $versionPatch);
-         
-      if(isset($versionPreRelease))
-      {
-        $qb->andWhere('u.versionPreRelease = :versionPreRelease')
-           ->setParameter('versionPreRelease', $versionPreRelease);
-      }
-      else
-      {
-        $qb->andWhere($qb->expr()->isNull('u.versionPreRelease'));
-      }
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('u')
+            ->from('HLPNebulaBundle:Build', 'u')
+            ->leftJoin('u.branch', 'b')
+            ->addSelect('b')
+            ->leftJoin('b.meta', 'm')
+            ->addSelect('m')
+            ->andWhere('m.metaId = :metaId')
+            ->setParameter('metaId', $metaId);
 
-      if(isset($versionMetadata))
-      {
-        $qb->andWhere('u.versionMetadata = :versionMetadata')
-           ->setParameter('versionMetadata', $versionMetadata);
-      }
-      else
-      {
-        $qb->andWhere($qb->expr()->isNull('u.versionMetadata'));
-      }
-    }
-    else
-    {
-      $qb->andWhere('u.isReady = true')
-         ->orderBy('u.versionMajor', 'DESC')
-         ->addOrderBy('u.versionMinor', 'DESC')
-         ->addOrderBy('u.versionPatch', 'DESC')
-         ->setMaxResults(1);
-    }
+        if(isset($branchId))
+        {
+            $qb->andWhere('b.branchId = :branchId')
+                ->setParameter('branchId', $branchId);
+        }
+        else
+        {
+            $qb->andWhere('b.isDefault = true');
+        }
 
-    return $qb->getQuery()
-              ->getOneOrNullResult();
-  }
+        if(isset($version))
+        {
+            $qb->andWhere('u.version = :version')
+                ->setParameter('version', $version);
+        }
+        else
+        {
+            $qb->andWhere('u.state = :state')
+                ->orderBy('u.versionMajor', 'DESC')
+                ->addOrderBy('u.versionMinor', 'DESC')
+                ->addOrderBy('u.versionPatch', 'DESC')
+                ->setMaxResults(1)
+                ->setParameter('state', Build::DONE);
+        }
+
+        return $qb->getQuery()
+            ->getOneOrNullResult();
+    }
 }

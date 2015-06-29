@@ -28,6 +28,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Doctrine\Common\Collections\Criteria;
 
 /**
  * Meta
@@ -44,20 +45,6 @@ class Meta
     private $users;
     
     /**
-     * @var Integer
-     *
-     * @ORM\Column(name="nbBranches", type="integer")
-     */
-    private $nbBranches;
-    
-    /**
-     * @var Integer
-     *
-     * @ORM\Column(name="nbBuilds", type="integer")
-     */
-    private $nbBuilds;
-    
-    /**
      * @ORM\OneToMany(targetEntity="HLP\NebulaBundle\Entity\Author", mappedBy="meta", cascade={"remove"}, cascade={"persist", "remove"}, orphanRemoval=true)
      */
     private $authors;
@@ -69,12 +56,12 @@ class Meta
     private $logo;
     
     /**
-     * @ORM\OneToMany(targetEntity="HLP\NebulaBundle\Entity\Branch", mappedBy="meta", cascade={"remove"})
+     * @ORM\OneToMany(targetEntity="HLP\NebulaBundle\Entity\Branch", mappedBy="meta", cascade={"remove"}, fetch="EXTRA_LAZY", indexBy="branchId")
      */
     private $branches;
     
     /**
-     * @ORM\OneToMany(targetEntity="HLP\NebulaBundle\Entity\Build", mappedBy="meta", cascade={"remove"})
+     * @ORM\OneToMany(targetEntity="HLP\NebulaBundle\Entity\Build", mappedBy="meta", cascade={"remove"}, fetch="EXTRA_LAZY")
      */
     private $builds;
     
@@ -331,7 +318,6 @@ class Meta
     {
         $this->branches[] = $branches;
         $branches->setMeta($this);
-        $this->nbBranches++;
         return $this;
     }
 
@@ -342,7 +328,6 @@ class Meta
      */
     public function removeBranch(\HLP\NebulaBundle\Entity\Branch $branches)
     {
-        $this->nbBranches--;
         $this->branches->removeElement($branches);
     }
 
@@ -355,24 +340,35 @@ class Meta
     {
         return $this->branches;
     }
+
+    /**
+     * Get the default branch (usually "master")
+     *
+     * @return \HLP\NebulaBundle\Entitiy\Branch
+     */
+    public function getDefaultBranch()
+    {
+        $expr = Criteria::expr()->eq('isDefault', true);
+        $crit = Criteria::create()->where($expr);
+        return $this->branches->matching($crit)->first();
+    }
     
     /**
      * @Assert\Callback
      */
     public function forbiddenWords(ExecutionContextInterface $context)
     {
-      $forbiddenWords = Array('metas','profile','activity');
+        $forbiddenWords = Array('metas','profile','activity');
       
-      if(in_array($this->metaId, $forbiddenWords)) {
-        $context->addViolationAt(
-            'metaId',
-            'meta ID is a forbidden word ("'.$this->metaId.'") !',
-            array(),
-            null
+        if(in_array($this->metaId, $forbiddenWords)) {
+            $context->addViolationAt(
+                'metaId',
+                'meta ID is a forbidden word ("'.$this->metaId.'") !',
+                array(),
+                null
             );
-       }
+        }
     }
-      
 
     /**
      * Add authors
@@ -420,7 +416,7 @@ class Meta
         
         foreach($this->keywords as $key => $keyword)
         {
-          $this->keywords[$key] = trim($keyword);
+            $this->keywords[$key] = trim($keyword);
         }
         
         $this->keywords = array_filter($this->keywords);
@@ -438,10 +434,10 @@ class Meta
         $keywordsStr = '';
         if(isset($this->keywords))
         {
-          foreach($this->keywords as $keyword)
-          {
-            $keywordsStr .= $keyword.', ';
-          }
+            foreach($this->keywords as $keyword)
+            {
+                $keywordsStr .= $keyword.', ';
+            }
         }
         return $keywordsStr;
     }
@@ -555,7 +551,7 @@ class Meta
      */
     public function getNbBranches()
     {
-        return $this->nbBranches;
+        return $this->branches->count();
     }
 
     /**
@@ -578,7 +574,7 @@ class Meta
      */
     public function getNbBuilds()
     {
-        return $this->nbBuilds;
+        return $this->builds->count();
     }
 
     /**
@@ -591,7 +587,6 @@ class Meta
     {
         $this->builds[] = $builds;
         $builds->setMeta($this);
-        $this->nbBuilds++;
         return $this;
     }
 
@@ -602,7 +597,6 @@ class Meta
      */
     public function removeBuild(\HLP\NebulaBundle\Entity\Build $builds)
     {
-        $this->nbBuilds--;
         $this->builds->removeElement($builds);
     }
 

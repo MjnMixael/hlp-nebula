@@ -48,13 +48,14 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="nebula-navbar-collapse">
           <ul class="nav navbar-nav">
+            {% set route = app.request.attributes.get('_route') %}
             {% for name, title in {
               'start': 'Get started',
               'metas': 'Mods',
               'users': 'Modders',
               'activity': 'Activity'
             } %}
-              <li class="{% if app.request.attributes.get('_route') == 'hlp_nebula_workshop_' ~ name %}active{% endif %}">
+              <li class="{% if route == 'hlp_nebula_workshop_' ~ name %}active{% endif %}">
                 <a href="{{ path('hlp_nebula_workshop_' ~ name) }}">{{ title|e }}</a>
               </li>
             {% endfor %}
@@ -96,6 +97,7 @@
       {% javascripts 
         'js/bootstrap.min.js'
         'js/symform.js'
+        'bundles/hlpnebula/js/app.js'
         filter='uglifyjs2'
       %}
         <script src="{{ asset_url }}"></script>

@@ -22,9 +22,9 @@
       <tbody>
   {% endif %}
         <tr>
-          <td><a href="{{ path('hlp_nebula_mod', {'owner': mod.owner.nameCanonical, 'mod': mod.modId}) }}">{{ mod.modId }}</a></td>
+          <td><a href="{{ path('hlp_nebula_repository_meta', {'meta': mod.metaId}) }}">{{ mod.metaId }}</a></td>
           <td>{{ mod.title }}</td>
-          <td>{{ mod.owner.name }}</td>
+          <td>{# mod.owner.name #}</td>
           <td>{{ mod.firstRelease|date("d M Y") }}</td>
         </tr>
   {% if loop.last %}

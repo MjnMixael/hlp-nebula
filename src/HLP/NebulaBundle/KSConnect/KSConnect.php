@@ -28,78 +28,72 @@ namespace HLP\NebulaBundle\KSConnect;
 
 class KSConnect
 {
-  protected $sendURL;
-  
-  protected $retrieveURL;
-  
-  protected $scriptURL;
-  
-  protected $wsURL;
-  
-  protected $APIkey;
-  
-  protected $ksconn;
-  
-  public function __construct($server, $APIkey, $secure)
-  {
-    if($secure)
-    {
-      $urlBase = 'https://' . $server;
-      $wsBase = 'wss://' . $server;
-    } else {
-      $urlBase = 'http://' . $server;
-      $wsBase = 'ws://' . $server;
-    }
-    
-    $this->apiURL = $urlBase . '/api';
-    $this->scriptURL = $urlBase . '/static/converter.js';
-    $this->wsURL = $wsBase . '/ws/converter';
-    
-    $this->APIkey = $APIkey;
-    
-    $this->ksconn = curl_init();
-    curl_setopt($this->ksconn, CURLOPT_FAILONERROR, true);
-    curl_setopt($this->ksconn, CURLOPT_RETURNTRANSFER, true);
-  }
-  
-  public function getScriptURL()
-  {
-    return $this->scriptURL;
-  }
-  
-  public function getWsURL()
-  {
-    return $this->wsURL;
-  }
-  
-  public function requestConversion($data, $webhook)
-  {
-    return $this->_callApi('request', array(
-        'passwd'  => $this->APIkey, 
-        'data'    => $data,
-        'webhook' => $webhook
-    ));
-  }
-  
-  public function retrieveConverted($ticket, $token)
-  {
-    return $this->_callApi('retrieve', array(
-			  'ticket' => $ticket, 
-			  'token'  => $token,
-	  ));
-  }
+    protected $sendURL;
+    protected $retrieveURL;
+    protected $scriptURL;
+    protected $wsURL;
+    protected $APIkey;
+    protected $ksconn;
 
-  protected function _callApi($method, $fields)
-  {
-    curl_setopt($this->ksconn, CURLOPT_URL, $this->apiURL . '/' . $method);
-    curl_setopt($this->ksconn, CURLOPT_POST, count($fields));
-    curl_setopt($this->ksconn, CURLOPT_POSTFIELDS, http_build_query($fields));
-    
-    return json_decode(curl_exec($this->ksconn));
-  }
-  
-  public function __destruct()
-  {
-    curl_close($this->ksconn);
-  }
+    public function __construct($server, $APIkey, $secure)
+    {
+        if ($secure) {
+            $urlBase = 'https://' . $server;
+            $wsBase = 'wss://' . $server;
+        } else {
+            $urlBase = 'http://' . $server;
+            $wsBase = 'ws://' . $server;
+        }
+
+        $this->apiURL = $urlBase . '/api/converter';
+        $this->scriptURL = $urlBase . '/static/converter.js';
+        $this->wsURL = $wsBase;
+
+        $this->APIkey = $APIkey;
+
+        $this->ksconn = curl_init();
+        curl_setopt($this->ksconn, CURLOPT_FAILONERROR, true);
+        curl_setopt($this->ksconn, CURLOPT_RETURNTRANSFER, true);
+    }
+
+    public function getScriptURL()
+    {
+        return $this->scriptURL;
+    }
+
+    public function getWsURL()
+    {
+        return $this->wsURL;
+    }
+
+    public function requestConversion($data, $webhook)
+    {
+        return $this->_callApi('request', array(
+            'passwd'  => $this->APIkey, 
+            'data'    => $data,
+            'webhook' => $webhook
+        ));
+    }
+
+    public function retrieveConverted($ticket, $token)
+    {
+        return $this->_callApi('retrieve', array(
+            'ticket' => $ticket, 
+            'token'  => $token,
+        ));
+    }
+
+    protected function _callApi($method, $fields)
+    {
+        curl_setopt($this->ksconn, CURLOPT_URL, $this->apiURL . '/' . $method);
+        curl_setopt($this->ksconn, CURLOPT_POST, count($fields));
+        curl_setopt($this->ksconn, CURLOPT_POSTFIELDS, http_build_query($fields));
+
+        return json_decode(curl_exec($this->ksconn));
+    }
+
+    public function __destruct()
+    {
+        curl_close($this->ksconn);
+    }
 }

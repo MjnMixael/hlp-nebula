@@ -5,6 +5,7 @@ namespace HLP\NebulaBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Ngld\CommonBundle\DependencyInjection\ContainerRef;
 
 /**
  * Logo
@@ -27,17 +28,10 @@ class Logo
     /**
      * @var string
      *
-     * @ORM\Column(name="url", type="string", length=255)
+     * @ORM\Column(name="ext", type="string", length=10)
      */
-    private $url;
+    private $ext;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="alt", type="string", length=255)
-     */
-    private $alt;
-    
     /**
      * @Assert\File(
      *     maxSize = "1024k"
@@ -50,8 +44,7 @@ class Logo
      * )
      */
     private $file;
-    
-    private $tempFilename;
+    private $_oldFile;
 
     /**
      * Get id
@@ -62,68 +55,19 @@ class Logo
     {
         return $this->id;
     }
-
-    /**
-     * Set url
-     *
-     * @param string $url
-     * @return Logo
-     */
-    public function setUrl($url)
-    {
-        $this->url = $url;
-
-        return $this;
-    }
-
-    /**
-     * Get url
-     *
-     * @return string 
-     */
-    public function getUrl()
-    {
-        return $this->url;
-    }
-
-    /**
-     * Set alt
-     *
-     * @param string $alt
-     * @return Logo
-     */
-    public function setAlt($alt)
-    {
-        $this->alt = $alt;
-
-        return $this;
-    }
-
-    /**
-     * Get alt
-     *
-     * @return string 
-     */
-    public function getAlt()
-    {
-        return $this->alt;
-    }
     
     public function getFile()
     {
-      return $this->file;
+        return $this->file;
     }
     
     public function setFile(UploadedFile $file)
     {
-      $this->file = $file;
+        if (is_file($this->getAbsolutePath())) {
+            $this->_oldFile = $this->getAbsolutePath();
+        }
 
-      if (null !== $this->url) {
-        $this->tempFilename = $this->url;
-
-        $this->url = null;
-        $this->alt = null;
-      }
+        $this->file = $file;
     }
 
     /**
@@ -132,13 +76,9 @@ class Logo
      */
     public function preUpload()
     {
-      if (null === $this->file) {
-        return;
-      }
-
-      $this->url = $this->file->guessExtension();
-
-      $this->alt = $this->file->getClientOriginalName();
+        if (null !== $this->file) {
+            $this->ext = $this->file->guessExtension();
+        }
     }
 
     /**
@@ -147,29 +87,28 @@ class Logo
      */
     public function upload()
     {
-      if (null === $this->file) {
-        return;
-      }
-
-      if (null !== $this->tempFilename) {
-        $oldFile = $this->getUploadRootDir().'/'.$this->id.'.'.$this->tempFilename;
-        if (file_exists($oldFile)) {
-          unlink($oldFile);
+        if (null === $this->file) {
+            return;
         }
-      }
 
-      $this->file->move(
-        $this->getUploadRootDir(),
-        $this->id.'.'.$this->url
-      );
+        if (isset($this->_oldFile)) {
+            unlink($this->_oldFile);
+            $this->_oldFile = null;
+        }
+
+        $this->file->move(
+            $this->getUploadRootDir(),
+            $this->id . '.' . $this->ext
+        );
+        $this->file = null;
     }
 
     /**
      * @ORM\PreRemove()
      */
-    public function preRemoveUpload()
+    public function rememberFilename()
     {
-      $this->tempFilename = $this->getUploadRootDir().'/'.$this->id.'.'.$this->url;
+        $this->_oldFile = $this->getAbsolutePath();
     }
 
     /**
@@ -177,18 +116,28 @@ class Logo
      */
     public function removeUpload()
     {
-      if (file_exists($this->tempFilename)) {
-        unlink($this->tempFilename);
-      }
+        if (isset($this->_oldFile)) {
+            unlink($this->_oldFile);
+        }
     }
 
     public function getUploadDir()
     {
-      return 'uploads/img';
+        return 'uploads/img';
     }
 
     protected function getUploadRootDir()
     {
-      return __DIR__.'/../../../../web/'.$this->getUploadDir();
+        return ContainerRef::get()->getParameter('web_path') . '/' . $this->getUploadDir();
+    }
+
+    public function getAbsolutePath()
+    {
+        return $this->getUploadRootDir() . '/' . $this->id . '.' . $this->ext;
+    }
+
+    public function getWebPath()
+    {
+        return ContainerRef::get()->get('templating.helper.assets')->getUrl($this->getUploadDir() . '/' . $this->id . '.' . $this->ext);
     }
 }

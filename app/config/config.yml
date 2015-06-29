@@ -35,6 +35,7 @@ assetic:
     use_controller: false
     bundles:        ["HLPNebulaBundle"]
     #java: /usr/bin/java
+    write_to:       "%web_path%"
     filters:
         cssrewrite: ~
         uglifyjs2: ~

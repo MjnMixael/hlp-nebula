@@ -45,98 +45,46 @@ class BranchRepository extends EntityRepository
             ->where('m.metaId = :meta')
             ->andWhere('b.branchId = :branchId')
             ->setParameter('meta', $parameters['meta'])
-            ->setParameter('branchId', $parameters['branchId'])
-        ;
-        
-        return $queryBuilder->getQuery()
-            ->getOneOrNullResult();
+            ->setParameter('branchId', $parameters['branchId']);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
-    
-    public function getBranches($meta, $page, $nbPerPage)
+
+    public function getBranchQueryBuilder($meta, $page = 1, $nbPerPage = 0)
     {
-        $query = $this->createQueryBuilder('b')
+        $qb = $this->createQueryBuilder('b')
             ->leftJoin('b.meta', 'm')
             ->where('m = :meta')
-            ->setParameter('meta', $meta)
-            ->getQuery()
-        ;
+            ->setParameter('meta', $meta);
 
-        $query
-            ->setFirstResult(($page-1) * $nbPerPage)
-            ->setMaxResults($nbPerPage)
-        ;
+        return $qb;
+    }
 
-        return new Paginator($query, true);
-    }
-    
-  public function findSingleBranch($ownerNameCanonical, $modId, $branchId = null)
-  {
-    $qb = $this->_em->createQueryBuilder();
-    $qb->select('b')
-       ->from('HLPNebulaBundle:Branch', 'b')
-       ->leftJoin('b.mod', 'm')
-       ->addSelect('m')
-       ->leftJoin('m.userAsOwner', 'uo')
-       ->addSelect('uo')
-       ->leftJoin('m.teamAsOwner', 'to')
-       ->addSelect('to')
-       ->leftJoin('b.builds', 'u')
-       ->addSelect('u')
-       ->where('uo.usernameCanonical = :nameCanonical OR to.nameCanonical = :nameCanonical')
-       ->andWhere('m.modId = :modId')
-       ->orderBy('u.versionMajor', 'DESC')
-       ->addOrderBy('u.versionMinor', 'DESC')
-       ->addOrderBy('u.versionPatch', 'DESC')
-       ->addOrderBy('u.versionPreRelease', 'DESC')
-       ->setParameter('nameCanonical', $ownerNameCanonical)
-       ->setParameter('modId', $modId);
-    
-    if(isset($branchId))
+    public function getBranches($meta, $page = 1, $nbPerPage = 0)
     {
-      $qb->andWhere('b.branchId = :branchId')
-         ->setParameter('branchId', $branchId);
+        return $this->getBranchQueryBuilder($meta, $page, $nbPerPage)->getQuery()->getResult();
     }
-    else
+
+    public function findSingleBranch($metaId, $branchId = null)
     {
-      $qb->andWhere('b.isDefault = true');
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('b')
+            ->from('HLPNebulaBundle:Branch', 'b')
+            ->leftJoin('b.meta', 'm')
+            ->addSelect('m')
+            ->andWhere('m.metaId = :metaId')
+            ->setParameter('metaId', $metaId);
+
+        if(isset($branchId))
+        {
+            $qb->andWhere('b.branchId = :branchId')->setParameter('branchId', $branchId);
+        }
+        else
+        {
+            $qb->andWhere('b.isDefault = true');
+        }
+
+
+        return $qb->getQuery()->getOneOrNullResult();
     }
-    
-    
-    return $qb->getQuery()
-              ->getOneOrNullResult();
-  }
-  
-  public function findWithJoins($args)
-  {
-    $qb = $this->_em->createQueryBuilder();
-    $qb->select('b')
-       ->from('HLPNebulaBundle:Branch', 'b')
-       ->leftJoin('b.meta', 'm')
-       ->addSelect('m')
-       ->where('b.branchId = :branchId AND b.metaId = :metaId')
-       ->setParameter('branchId', $args['branchId'])
-       ->setParameter('metaId', $args['metaId']);
-    
-    return $qb->getQuery()
-              ->getOneOrNullResult();
-  }
-  
-  public function getBranchFromMod($id, $exclude = null)
-  {
-    $qb = $this->_em->createQueryBuilder();
-    $qb->select('b')
-       ->from('HLPNebulaBundle:Branch', 'b')
-       ->leftJoin('b.meta', 'm')
-       ->where('m.id = :id')
-       ->orderBy('b.isDefault', 'DESC')
-       ->setParameter('id', $id);
-       
-    if($exclude)
-    {
-      $qb->andWhere('b.id != :exclude')
-         ->setParameter('exclude', $exclude);
-    }
-       
-    return $qb;
-  }
 }

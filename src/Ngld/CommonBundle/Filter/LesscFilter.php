@@ -1,6 +1,6 @@
 <?php
 
-namespace Ngld\AsseticBundle\Filter;
+namespace Ngld\CommonBundle\Filter;
 
 use Assetic\Asset\AssetInterface;
 use Assetic\Exception\FilterException;

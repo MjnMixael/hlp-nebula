@@ -30,6 +30,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Ngld\CommonBundle\DependencyInjection\ContainerRef;
 
 /**
  * Build
@@ -699,6 +700,10 @@ class Build
 
     public function setVersion($version)
     {
+        if(!isset($this->semver_pattern)) {
+            $this->semver_pattern = ContainerRef::get()->getParameter('hlp_nebula.semver.pattern');
+        }
+
         if(!preg_match('/' . $this->semver_pattern . '/', $version, $m)) return;
 
         $this->versionMajor = intval($m[1]);

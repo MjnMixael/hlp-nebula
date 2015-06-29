@@ -1,0 +1,29 @@
+parameters:
+    ngld.common.lessc.compress: true
+    ngld.common.lessc.ie_compat: false
+    ngld.common.lessc.source_map: true
+
+services:
+    ngld.common.lessc:
+        class: Ngld\CommonBundle\Filter\LesscFilter
+        calls:
+            - [setCompress, ['%ngld.common.lessc.compress%']]
+            - [setIeCompat, ['%ngld.common.lessc.ie_compat%']]
+            - [setSourceMap, ['%ngld.common.lessc.source_map%']]
+        tags:
+            - { name: assetic.filter, alias: lessc }
+
+    ngld.common.twig_helpers:
+        class: Ngld\CommonBundle\Twig\HelpersExtension
+        tags:
+            - { name: twig.extension }
+
+    # ngld.common.doctrine_subscriber:
+    #     class: Ngld\CommonBundle\Doctrine\DoctrineSubscriber
+    #     arguments: ["@service_container"]
+    #     tags:
+    #         - { name: doctrine.event_subscriber }
+
+    # ngld.common.container_ref:
+    #     class: Ngld\CommonBundle\DependencyInjection\ContainerRef
+    #     arguments: ["@service_container"]

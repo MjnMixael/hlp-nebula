@@ -1,0 +1,55 @@
+{% extends "HLPNebulaBundle:Build:_layout.html.twig" %}
+
+{% block build_tab %}
+    {% if build.state != constant('DONE', build) %}
+        <div class="alert alert-danger">
+            The build has not been validated! I won't be able to display anything.
+        </div>
+    {% else %}
+        {% for pkg in build_data.packages %}
+            {% if not (loop.first and loop.last) %}<h4>{{ pkg.name }}</h4>{% endif %}
+            
+            <table class="table table-stripes">
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>MD5 Checksum</th>
+                        <th>Archive</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for file in pkg.filelist %}
+                        <tr>
+                            <td>{{ file.filename }}</td>
+                            <td>{{ file.md5sum }}</td>
+                            <td>
+                                <a href="javascript:;" tabindex="0" role="button" class="pkg-file"
+                                    data-toggle="popover" data-trigger="focus" data-archive="{{ pkg.name ~ '/' ~ file.archive }}">
+                                    {{ file.archive }}
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+
+        {% for key, archive in archives %}
+            <div class="hide pkg-archive" data-archive="{{ key }}">
+                {% for url in archive.urls %}
+                    <a href="{{ url }}">{{ url|parse_url.host }}</a><br>
+                {% endfor %}
+                {#
+                    <br>
+                    MD5: {{ archive.md5sum }}
+                #}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script type="text/javascript">init_pkg_files();</script>
+{% endblock %}

@@ -31,134 +31,124 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class JSONBuilder
 {
-  protected $request;
-  
-  public function setRequest(RequestStack $request_stack)
-  {
-    $this->request = $request_stack->getCurrentRequest();
-  }
-    
-  /**
-   * @param object $build
-   * @return array
-   */
-  public function createFromBuild(\HLP\NebulaBundle\Entity\Build $build, $finalise = true)
-  {
-    $branch = $build->getBranch();
-    $mod = $branch->getMod();
-    $owner = $mod->getOwner();
-    
-    $data = Array();
-    $data['id'] = $mod->getModId();
-    $data['title'] = $mod->getTitle();
-    $data['version'] = $build->getVersion();
-    
-    if($mod->getDescription()) {
-      $data['description'] = $mod->getDescription();
-    }
-    
-    if($mod->getLogo()) {
-      $data['logo'] = str_replace("/app_dev.php", "", $this->request->getUriForPath('/uploads/img/')).$mod->getLogo()->getId().'.'.$mod->getLogo()->getUrl();
-    }
-    
-    if($build->getNotes() || $branch->getNotes() || $mod->getNotes()) {
-      $data['notes'] = "MOD NOTES :\n".$mod->getNotes()."\n\nBRANCH NOTES :\n".$branch->getNotes()."\n\nBUILD NOTES :\n".$build->getNotes();
-    }
-    
-    if($build->getFolder()) {
-      $data['folder'] = $build->getFolder();
-    }
-    
-    if(count($build->getPackages()) > 0) {
-      $data['packages'] = Array();
-      
-      foreach ($build->getPackages() as $i => $package) {
-        $data['packages'][$i] = Array();
-        $data['packages'][$i]['name'] = $package->getName();
-        
-        if($package->getNotes()) {
-          $data['packages'][$i]['notes'] = $package->getNotes();
-        }
-        
-        $data['packages'][$i]['status'] = $package->getStatus();
-        
-        if(count($package->getDependencies()) > 0) {
-          $data['packages'][$i]['dependencies'] = Array();
-          
-          foreach ($package->getDependencies() as $j => $dependency) {
-            $data['packages'][$i]['dependencies'][$j] = Array();
-            $data['packages'][$i]['dependencies'][$j]['id'] = $dependency->getDepId();
-            $data['packages'][$i]['dependencies'][$j]['version'] = $dependency->getVersion();
-            
-            if(count($dependency->getDepPkgs()) > 0) {
-              $data['packages'][$i]['dependencies'][$j]['packages'] = Array();
-              
-              foreach ($dependency->getDepPkgs() as $k => $pkg) {
-                $data['packages'][$i]['dependencies'][$j]['packages'][$k] = $pkg;
-              }
-            }
-          }
-        }
-        
-        if(count($package->getEnvVars()) > 0) {
-          $data['packages'][$i]['environment'] = Array();
-          
-          foreach ($package->getEnvVars() as $j => $envVar) {
-            $data['packages'][$i]['environment'][$j] = Array();
-            $data['packages'][$i]['environment'][$j]['type'] = $envVar->getType();
-            $data['packages'][$i]['environment'][$j]['value'] = $envVar->getValue();
-          }
-        }
-        
-        if(count($package->getFiles()) > 0) {
-          $data['packages'][$i]['files'] = Array();
-          
-          foreach ($package->getFiles() as $j => $file) {
-            $data['packages'][$i]['files'][$j] = Array();
-            $data['packages'][$i]['files'][$j]['filename'] = $file->getFilename();
-            $data['packages'][$i]['files'][$j]['is_archive'] = $file->getIsArchive();
-            
-            if($file->getDest()) {
-              $data['packages'][$i]['files'][$j]['dest'] = $file->getDest();
-            }
+    /**
+    * @param object $build
+    * @return array
+    */
+    public function createFromBuild(\HLP\NebulaBundle\Entity\Build $build, $finalise = true)
+    {
+        $branch = $build->getBranch();
+        $meta = $branch->getMeta();
 
-            $data['packages'][$i]['files'][$j]['urls'] = $file->getUrls();
-            
-            if(count($file->getUrls()) > 0) {
-              $data['packages'][$i]['files'][$j]['urls'] = Array();
-              
-              foreach ($file->getUrls() as $k => $url) {
-                $data['packages'][$i]['files'][$j]['urls'][$k] = $url;
-              }
+        $data = Array();
+        $data['id'] = $meta->getMetaId();
+        $data['title'] = $meta->getTitle();
+        $data['version'] = $build->getVersion();
+
+        if($meta->getDescription()) {
+            $data['description'] = $meta->getDescription();
+        }
+
+        if(($logo = $meta->getLogo())) {
+            $data['logo'] = $logo->getWebPath();
+        }
+
+        if($build->getNotes() || $branch->getNotes() || $meta->getNotes()) {
+            $data['notes'] = trim($meta->getNotes() . "\n\n" . $branch->getNotes() . "\n\n" . $build->getNotes());
+        }
+
+        if($build->getFolder()) {
+            $data['folder'] = $build->getFolder();
+        }
+
+        if(count($build->getPackages()) > 0) {
+            $data['packages'] = Array();
+
+            foreach ($build->getPackages() as $package) {
+                $pkg = array(
+                    'name'   => $package->getName(),
+                    'status' => $package->getStatus()
+                );
+                
+                if($package->getNotes()) {
+                    $pkg['notes'] = $package->getNotes();
+                }
+
+                if(count($package->getDependencies()) > 0) {
+                    $pkg['dependencies'] = array();
+
+                    foreach ($package->getDependencies() as $dependency) {
+                        $d = array(
+                            'id'      => $dependency->getDepId(),
+                            'version' => $dependency->getVersion()
+                        );
+
+                        if(count($dependency->getDepPkgs()) > 0) {
+                            $d['packages'] = $dependency->getDepPkgs();
+                        }
+
+                        $pkg['dependencies'][] = $d;
+                    }
+                }
+
+                if(count($package->getEnvVars()) > 0) {
+                    $pkg['environment'] = Array();
+
+                    foreach ($package->getEnvVars() as $envVar) {
+                        $pkg['environment'][] = array(
+                            'type' => $envVar->getType(),
+                            'value' => $envVar->getValue()
+                        );
+                    }
+                }
+
+                if(count($package->getFiles()) > 0) {
+                    $pkg['files'] = Array();
+
+                    foreach ($package->getFiles() as $file) {
+                        $f = array(
+                            'filename' => $file->getFilename(),
+                            'is_archive' => $file->getIsArchive(),
+                            'urls' => $file->getUrls()
+                        );
+
+                        if($file->getDest()) {
+                            $f['dest'] = $file->getDest();
+                        }
+
+                        $pkg['files'][] = $f;
+                    }
+                }
+
+                $data['packages'][] = $pkg;
             }
-          }
         }
-      }
-    }
-    
-    if(count($build->getActions()) > 0) {
-      $data['actions'] = Array();
-      
-      foreach ($build->getActions() as $i => $action) {
-        $data['actions'][$i] = Array();
-        $data['actions'][$i]['type'] = $action->getType();
-        $data['actions'][$i]['paths'] = $action->getPaths();
-        
-        if('move' == $action->getType()) {
-          $data['actions'][$i]['dest'] = $action->getDest();
+
+        if(count($build->getActions()) > 0) {
+            $data['actions'] = Array();
+
+            foreach ($build->getActions() as $i => $action) {
+                $act = Array(
+                    'type' => $action->getType(),
+                    'paths' => $action->getPaths(),
+                    'glob' => $action->getGlob()
+                );
+
+                if('move' == $action->getType()) {
+                    $act['dest'] = $action->getDest();
+                }
+
+                $data['actions'][] = $act;
+            }
         }
-        
-        $data['actions'][$i]['glob'] = $action->getGlob();
-      }
+
+        if($finalise)
+        {
+            return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        }
+        else
+        {
+            return $data;
+        }
     }
-    
-    if($finalise)
-    {
-      return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-    }
-    else
-    {
-      return $data;
-    }
-  }
 }

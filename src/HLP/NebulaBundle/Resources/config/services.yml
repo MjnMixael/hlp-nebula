@@ -1,8 +1,6 @@
 services:
     hlpnebula.json_builder:
         class: HLP\NebulaBundle\JSONBuilder\JSONBuilder
-        calls:
-            - [setRequest, [@request_stack]]
         
     hlp_nebula.knossos:
         class: HLP\NebulaBundle\KSConnect\KSConnect

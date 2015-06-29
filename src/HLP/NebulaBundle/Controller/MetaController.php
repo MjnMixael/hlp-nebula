@@ -47,12 +47,21 @@ class MetaController extends Controller
     /**
      * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
      */
+    public function showOverviewAction(Request $request, Meta $meta)
+    {
+        return $this->render('HLPNebulaBundle:Meta:overview.html.twig', [
+            'meta' => $meta,
+            'builds' => $meta->getDefaultBranch()->getBuilds()
+        ]);
+    }
+
+    /**
+     * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
+     */
     public function showDetailsAction(Request $request, Meta $meta)
     {
         $session = new Session();
-        $session->set('meta_refer', $this->getRequest()
-                                         ->getUri()
-        );
+        $session->set('meta_refer', $this->getRequest()->getUri());
       
         return $this->render('HLPNebulaBundle:Meta:details.html.twig', array(
             'meta'   => $meta
@@ -62,36 +71,18 @@ class MetaController extends Controller
     /**
      * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
      */
-    public function showBranchesAction(Request $request, Meta $meta, $page)
+    public function showBranchesAction(Request $request, Meta $meta)
     {
-        if ($page < 1) {
-            throw $this->createNotFoundException("Page ".$page." not found.");
-        }
-        
-        $nbPerPage = 10;
-        
-        $branchesList = $this->getDoctrine()
-            ->getManager()
-            ->getRepository('HLPNebulaBundle:Branch')
-            ->getBranches($meta, $page, $nbPerPage)
-        ;
+        $branchesList = $this->getDoctrine()->getManager()
+            ->getRepository('HLPNebulaBundle:Branch')->getBranches($meta);
 
-        $nbPages = ceil(count($branchesList)/$nbPerPage);
-        
-        if ($page > $nbPages && $nbPages != 0) {
-            throw $this->createNotFoundException("Page ".$page." not found.");
-        }
         
         $session = new Session();
-        $session->set('branch_refer', $this->getRequest()
-                                           ->getUri()
-        );
+        $session->set('branch_refer', $this->getRequest()->getUri());
     
         return $this->render('HLPNebulaBundle:Meta:branches.html.twig', array(
-            'meta'   => $meta,
+            'meta'           => $meta,
             'branchesList'   => $branchesList,
-            'nbPages' => $nbPages,
-            'page' => $page
         ));
     }
     
@@ -106,8 +97,7 @@ class MetaController extends Controller
         
         $nbPerPage = 10;
         
-        $usersList = $this->getDoctrine()
-            ->getManager()
+        $usersList = $this->getDoctrine()->getManager()
             ->getRepository('HLPNebulaBundle:User')
             ->getUsers($meta, $page, $nbPerPage)
         ;

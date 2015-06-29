@@ -1,5 +1,61 @@
 {% extends "HLPNebulaBundle:Build:_layout.html.twig" %}
 
 {% block build_tab %}
-    TODO
+    {% if build.state == constant('PROCESSING', build) %}
+        <div class="alert alert-info">
+            This build is currently being processed.
+            <a href="{{ path('hlp_nebula_process', { meta: meta.metaId, branch: branch.branchId, build: build.version }) }}">
+                Click here to watch{#
+            #}</a>.
+        </div>
+    {% elseif build.state == constant('FAILED', build) %}
+        <div class="alert alert-danger">
+            This build failed! This means that the downloads might be damaged or something else is wrong with this release.
+        </div>
+    {% elseif build.state != constant('DONE', build) %}
+        <div class="alert alert-warning">
+            I have no idea what's going on with this build... ???
+        </div>
+    {% endif %}
+
+    {% if is_granted('EDIT', meta) %}
+        <p>
+            {% set params = {'meta': meta.metaId, 'branch': branch.branchId, 'build': build.version} %}
+            <a href="{{ path('hlp_nebula_update_build', params) }}" class="btn btn-default">
+                <span class="glyphicon glyphicon-retweet"></span> Copy & update
+            </a>
+            {% if branch.builds|length > 1 %}
+                <a href="{{ path('hlp_nebula_transfer_build', params) }}" class="btn btn-default">
+                    <span class="glyphicon glyphicon-transfer"></span> Transfer
+                </a>
+            {% endif %}
+            {% if build.state != constant('WAITING', build) %}
+                <a href="{{ path('hlp_nebula_reprocess', params) }}" class="btn btn-default">
+                    <span class="glyphicon glyphicon-cog"></span> Reprocess
+                </a>
+            {% endif %}
+            <a href="{{ path('hlp_nebula_delete_build', params) }}" class="btn btn-danger">
+                <span class="glyphicon glyphicon-trash"></span> Delete
+            </a>
+        </p>
+    {% endif %}
+
+    {{ build.notes|nl2br }}
+
+    <h4>Downloads</h5>
+
+    {% for pkg in build.packages %}
+        {% if not (loop.first and loop.last) %}<h6>{{ pkg.name }}</h6>{% endif %}
+        <ul>
+            {% for file in pkg.files %}
+                <li>
+                    {{ file.filename }}:
+                    {% for url in file.urls %}
+                        {% if not loop.first %} | {% endif %}
+                        <a href="{{ url }}">{{ url|parse_url.host }}</a>
+                    {% endfor %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
 {% endblock %}

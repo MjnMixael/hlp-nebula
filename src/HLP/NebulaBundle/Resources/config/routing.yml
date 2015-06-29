@@ -83,7 +83,7 @@ hlp_nebula_repository_meta_update:
 hlp_nebula_repository_meta_delete:
     path:     /repository/{meta}/delete
     defaults: { _controller: HLPNebulaBundle:Meta:delete }
-        
+
 hlp_nebula_repository_meta_details:
     path:     /repository/{meta}/details
     defaults: { _controller: HLPNebulaBundle:Meta:showDetails }
@@ -106,13 +106,12 @@ hlp_nebula_repository_meta_activity:
     requirements:
         page: \d*
         
+hlp_nebula_repository_meta_overview:
+    pattern: /repository/{meta}
+    defaults: { _controller: HLPNebulaBundle:Meta:showOverview }
+
 hlp_nebula_repository_meta:
     pattern: /repository/{meta}
-    defaults:
-        _controller: FrameworkBundle:Redirect:redirect
-        route: hlp_nebula_repository_meta_branches
-        permanent: true
-    
     
 # Nebula branches routes
 
@@ -165,7 +164,11 @@ hlp_nebula_repository_build_delete:
 hlp_nebula_repository_build_details:
     path:     /repository/{meta}/{branch}/{build}/details
     defaults: { _controller: HLPNebulaBundle:Build:showDetails }
-    
+
+hlp_nebula_repository_build_files:
+    path:     /repository/{meta}/{branch}/{build}/files
+    defaults: { _controller: HLPNebulaBundle:Build:showFiles }
+
     
 hlp_nebula_repository_build:
     pattern: /repository/{meta}/{branch}/{build}
@@ -182,63 +185,77 @@ hlp_nebula_new_build:
     defaults: { _controller: HLPNebulaBundle:Branch:newBuild }
     
 hlp_nebula_build:
-    path:     /repository/{mod}/{branch}/{build}
+    path:     /repository/{meta}/{branch}/{build}
     defaults: { _controller: HLPNebulaBundle:Build:index }
     requirements:
         build:  ^(\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$
         
 hlp_nebula_process:
-    path:     /repository/{mod}/{branch}/{build}/process
+    path:     /repository/{meta}/{branch}/{build}/process
     defaults: { _controller: HLPNebulaBundle:Build:process }
+    requirements:
+        build:  ^(\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$
+
+hlp_nebula_reprocess:
+    path:     /repository/{meta}/{branch}/{build}/reprocess
+    defaults: { _controller: HLPNebulaBundle:Build:reprocess }
     requirements:
         build:  ^(\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$
         
 hlp_nebula_process_finalise:
-    path:     /repository/{mod}/{branch}/{build}/process_finalise
+    path:     /repository/{meta}/{branch}/{build}/process_finalise
     defaults: { _controller: HLPNebulaBundle:Build:processFinalise }
     requirements:
         build:  ^(\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$
         
 hlp_nebula_process_force_fail:
-    path:     /repository/{mod}/{branch}/{build}/process_force_fail
+    path:     /repository/{meta}/{branch}/{build}/process_force_fail
     defaults: { _controller: HLPNebulaBundle:Build:processForceFail }
     requirements:
         build:  ^(\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$
 
 hlp_nebula_build_data:
-    path:     /repository/{mod}/{branch}/{build}/show_data
+    path:     /repository/{meta}/{branch}/{build}/show_data
     defaults: { _controller: HLPNebulaBundle:Build:show }
     requirements:
-        build:  ^((\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?|current)$
+        build:  ^((\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?|latest)$
         
 hlp_nebula_build_data_finalised:
-    path:     /repository/{mod}/{branch}/{build}/show_data_finalised
+    path:     /repository/{meta}/{branch}/{build}/show_data_finalised
     defaults: { _controller: HLPNebulaBundle:Build:showFinalised }
     requirements:
-        build:  ^((\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?|current)$
+        build:  ^((\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?|latest)$
         
 hlp_nebula_update_build:
-    path:     /repository/{mod}/{branch}/{build}/copy_and_update
+    path:     /repository/{meta}/{branch}/{build}/copy_and_update
     defaults: { _controller: HLPNebulaBundle:Build:newBuildFrom }
     requirements:
         build:  ^(\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$
         
 hlp_nebula_transfer_build:
-    path:     /repository/{mod}/{branch}/{build}/copy_and_transfer
+    path:     /repository/{meta}/{branch}/{build}/copy_and_transfer
     defaults: { _controller: HLPNebulaBundle:Build:transfer }
     requirements:
         build:  ^(\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$
 
 hlp_nebula_delete_build:
-    path:     /repository/{mod}/{branch}/{build}/delete
+    path:     /repository/{meta}/{branch}/{build}/delete
     defaults: { _controller: HLPNebulaBundle:Build:delete }
     
 hlp_nebula_fs2mod:
-    path:     /repository/{mod}/{branch}/{build}.{format}
-    defaults: { _controller: HLPNebulaBundle:Build:raw, format: json }
+    path:     /repo/{path}.json
+    defaults:
+        _controller: HLPNebulaBundle:Build:raw
     requirements:
-        build:  ^((\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?|current)$
-        format: json|txt
+        path:  ^.+$
+
+# NOTE: This route is only used for URL generation, not matching! (it won't work)
+hlp_nebula_fs2mod_tpl:
+    path:     /repo/{meta}/{branch}/{build}.json
+    defaults:
+        _controller: HLPNebulaBundle:Build:raw
+        branch: default
+        build:  latest
     
 remove_trailing_slash:
     path: /{url}

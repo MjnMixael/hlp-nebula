@@ -1,6 +1,6 @@
 <?php
 
-namespace Ngld\AsseticBundle\DependencyInjection;
+namespace Ngld\CommonBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\Loader;
  *
  * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html}
  */
-class NgldAsseticExtension extends Extension
+class NgldCommonExtension extends Extension
 {
     /**
      * {@inheritDoc}
@@ -28,11 +28,15 @@ class NgldAsseticExtension extends Extension
         if(isset($config['filters']) && isset($config['filters']['lessc'])) {
             $lc = $config['filters']['lessc'];
             if(isset($lc['bin']))
-                $container->setParameter('ngld.assetic.lessc.bin', $lc['bin']);
+                $container->setParameter('ngld.common.lessc.bin', $lc['bin']);
 
-            $container->setParameter('ngld.assetic.lessc.compress', $lc['compress']);
-            $container->setParameter('ngld.assetic.lessc.ie_compat', $lc['ie_compat']);
-            $container->setParameter('ngld.assetic.lessc.source_map', $lc['source_map']);
+            $container->setParameter('ngld.common.lessc.compress', $lc['compress']);
+            $container->setParameter('ngld.common.lessc.ie_compat', $lc['ie_compat']);
+            $container->setParameter('ngld.common.lessc.source_map', $lc['source_map']);
         }
+
+        $this->addClassesToCompile(array(
+            'Ngld\\CommonBundle\\DependencyInjection\\ContainerRef',
+        ));
     }
 }
