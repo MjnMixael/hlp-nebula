@@ -1,82 +1,65 @@
 # HLP-Nebula
 
-**HLP-Nebula** is a **FreeSpace 2** mod repository manager.
+HLP-Nebula is a FreeSpace 2 mod repository manager.
 
 This project has two main goals :
-* Provide a **release management tool** for **modders**
-* Make **mod download and install** process **easier to players**
+* Provide a simple site where modders can upload their files.
+* Make mod download and installation easier for players.
 
-**HLP-Nebula** is mostly written in **PHP**, as a [**Symfony2**](http://symfony.com/) framework bundle.
+HLP-Nebula is mostly written in PHP, as a [Symfony2](http://symfony.com/) framework bundle.
 
 ## Dependencies
 
-To run **HLP-Nebula**, the first thing you need is a working **LAMP environment**.
-On **Ubuntu**, use command :  
+To run HLP-Nebula, the first thing you need is a working LAMP environment.
+On Ubuntu, use command :
 ```sudo apt-get install apache2 php5 mysql-server libapache2-mod-php5 php5-mysql php5-gd```
 
 ## Install
 
-1. If you have not done it yet, **download** the [latest version of **HLP-Nebula**](https://github.com/Hellzed/hlp-nebula).
-2. **Move** its root ```Symfony``` folder directly to your **Apache2 host folder**, and select ```Symfony``` as your **current working directory**.
-3. **Rename** ```app/config/parameters.yml.dist``` to ```app/config/parameters.yml```
-4. **Edit** ```app/config/parameters.yml``` and change these settings :
-   ```yaml
-   database_host: 127.0.0.1
-   database_port: null
-   database_name: symfony
-   database_user: root
-   database_password: yourpassword
-   ```
-   
-5. **Install Symfony "vendors"** (you may need to use ```sudo``` on Ubuntu desktop) :
+1. If you have not done it yet, download the [latest version of HLP-Nebula](https://github.com/ngld/hlp-nebula).
+2. Place the root folder inside your web server's document root.
+3. Rename ```app/config/parameters.yml.dist``` to ```app/config/parameters.yml```
+4. Edit ```app/config/parameters.yml``` modify it according to your system.
+5. [Install Composer](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx)
+6. Install the dependencies:
    ```bash
-   php composer.phar install
+   composer install
    ```
-6. **Allow Symfony to write** to its ```app/cache``` and ```app/logs``` :
+7. Give the web server write access to ```app/cache```, ```app/logs``` and ```web/uploads```:
    ```bash
-   sudo chmod 777 -R app/cache
-   sudo chmod 777 -R app/logs
+   sudo chown www-data -R app/cache app/logs web/uploads
    ```
-   
-7. **Initialise Doctrine2 ORM**, **Symfony2**'s database component (and register HLP-Nebula objects in Doctrine2) :
+
+8. Fill the database with the necessary tables:
    ```bash
-   php app/console doctrine:database:create
    php app/console doctrine:schema:update --force
    ```
 
-If **Symfony2** is installed at your **Apache2 host folder root**, this link should now work :
-[localhost/Symfony/web/app_dev.php/nebula](http://localhost/Symfony/web/app_dev.php/nebula/)
+Now you can access the Nebula through the ```web/app.php``` file.
+If you have Apache and mod_rewrite enabled, you should be able to access the ```web/``` folder directly.
+
 
 ## Quick start
 
-1. **Register** on this page : [localhost/Symfony/web/app_dev.php/nebula/register](http://localhost/Symfony/web/app_dev.php/nebula/register)
-2. Once connected, access your **personal mod repository** by clicking the link on the right side of the nav bar.
+1. Create the admin user with:
+   ```bash
+   php app/console fos:user:create <username> --super-admin
+   ```
+2. Now you can login and add your mods.
 
-## Client (FreeSpace 2 mod downloader/installer/launcher)
+## Clients and JSON Specification
 
-**HLP-Nebula** is developed jointly with [**Knossos**](https://github.com/ngld/knossos), but any FreeSpace 2 mod downloader/installer implementing this [schema](https://github.com/ngld/knossos/blob/develop/converter/schema.txt) can become a client ([**ALPHA**](http://www.hard-light.net/forums/index.php?topic=88119.0) FreeSpace 2 launcher developer contributed to the JSON format).
+The generated JSON data is [explained in a post on HLP](http://www.hard-light.net/forums/index.php?topic=89434.0).
+That post also contains a list of compatible clients at the bottom.
 
-**HLP-Nebula** could add ome _limited_ support for legacy TXT mod repository configuration files, if needed.
 
 ## Development
 
-**HLP-Nebula** is in _active development_. It is still missing a lot of features.
-The official [development thread](http://www.hard-light.net/forums/index.php?topic=86364) is found on [**Hard Light Productions**](www.hard-light.com), FreeSpace 2 community.
+HLP-Nebula is in _active development_. It is still missing a lot of features.
+The official [development thread](http://www.hard-light.net/forums/index.php?topic=86364) is found on [Hard Light Productions](http://www.hard-light.net), a FreeSpace 2 community.
 
-###To-do list :###
-
-**Modders site :**
-* User management : DONE
-* Mod/branch/build registration : DONE
-* JSON repository config file generation : DONE
-* JSON repository validation (to enable md5sum checks on client side) : DONE
-* Main pages (getting started, mods/modders global list...) : WIP
-* User/mod/branch/build detail pages and activity log : WIP
-
-**Players site :**
-* Everything : NOT STARTED
 
 ## License
 
-**HLP-Nebula** is licensed under the [European Union Public License, Version 1.1](LICENSE).  
-**Symfony** is licensed under the [MIT License](LICENSE).
+HLP-Nebula is licensed under the [European Union Public License, Version 1.1](LICENSE).
+Symfony is licensed under the [MIT License](LICENSE).

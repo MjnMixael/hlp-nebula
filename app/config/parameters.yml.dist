@@ -17,6 +17,7 @@ parameters:
     debug_toolbar:          true
     debug_redirects:        false
     use_assetic_controller: true
+    web_path:               "%kernel.root_dir%/../web"
     
     hlp_nebula.knossos.server: s1-nebula.tproxy.de
     hlp_nebula.knossos.apikey: ~

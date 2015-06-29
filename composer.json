@@ -1,8 +1,8 @@
 {
-    "name": "symfony/framework-standard-edition",
-    "license": "MIT",
+    "name": "hellzed/hlp-nebula",
+    "license": "EUPL",
     "type": "project",
-    "description": "The \"Symfony Standard Edition\" distribution",
+    "description": "A mod repository server for FreeSpace 2 Open",
     "autoload": {
         "psr-0": { "": "src/", "SymfonyStandard": "app/" }
     },
