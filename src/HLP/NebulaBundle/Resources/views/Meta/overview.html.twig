@@ -11,16 +11,18 @@
 
     {{ meta.description|nl2br }}
 
-    <h4>Downloads</h4>
+    <h3>Downloads</h4>
 
-    {% set build_found = false %}
-    {% for build in builds if build.state == constant('DONE', build) %}
-        <h5>{{ build.version }}</h5>
+    {% for build in meta_data %}
+        <h4>{{ build.version }}</h5>
 
-        {{ build.notes|nl2br }}
+        {{ build.build.notes|nl2br }}
 
+        <a href="{{ path('hlp_nebula_repository_build_files', {'meta': meta, 'branch': build.build.branch, 'build': build.build}) }}">
+            Show files
+        </a><br>
         {% for pkg in build.packages %}
-            {% if not (loop.first and loop.last) %}<h6>{{ pkg.name }}</h6>{% endif %}
+            {% if not (loop.first and loop.last) %}<h5>{{ pkg.name }}</h6>{% endif %}
             <ul>
                 {% for file in pkg.files %}
                     <li>
@@ -36,9 +38,7 @@
 
         <hr>
         {% set build_found = true %}
-    {% endfor %}
-
-    {% if not build_found %}
+    {% else %}
         No downloads available.
-    {% endif %}
+    {% endfor %}
 {% endblock %}

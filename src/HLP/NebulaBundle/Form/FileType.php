@@ -41,7 +41,7 @@ class FileType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('filename',   'text')
+            ->add('filename',   'text',         array('pattern' => '^([\\\/]?[^\0\\\/:\*\?"<>\|]+)*[\\\/]?$'))
             ->add('dest',       'text',         array('required' => false))
             ->add('urls',       'collection',   array('type'            => 'url',
                                                       'error_bubbling'  => false,

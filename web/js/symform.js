@@ -98,6 +98,7 @@ $(document).ready(function() {
     findSelect($prototype);
     findDepId($prototype);
     findDepPkgs($prototype);
+    $prototype.trigger('field-added');
   }
   
   function findSelect($element) {

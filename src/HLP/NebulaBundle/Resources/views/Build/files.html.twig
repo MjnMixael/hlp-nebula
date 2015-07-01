@@ -6,7 +6,7 @@
             The build has not been validated! I won't be able to display anything.
         </div>
     {% else %}
-        {% for pkg in build_data.packages %}
+        {% for pkg in packages %}
             {% if not (loop.first and loop.last) %}<h4>{{ pkg.name }}</h4>{% endif %}
             
             <table class="table table-stripes">

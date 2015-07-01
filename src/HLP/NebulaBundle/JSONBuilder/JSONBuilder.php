@@ -41,6 +41,7 @@ class JSONBuilder
         $meta = $branch->getMeta();
 
         $data = Array();
+        $data['type'] = $meta->getType();
         $data['id'] = $meta->getMetaId();
         $data['title'] = $meta->getTitle();
         $data['version'] = $build->getVersion();
@@ -50,11 +51,15 @@ class JSONBuilder
         }
 
         if(($logo = $meta->getLogo())) {
-            $data['logo'] = $logo->getWebPath();
+            $host = sprintf('http%s://%s/',
+                isset($_SERVER['HTTPS']) ? 's' : '',
+                isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost'
+            );
+            $data['logo'] = $host . $logo->getWebPath();
         }
 
-        if($build->getNotes() || $branch->getNotes() || $meta->getNotes()) {
-            $data['notes'] = trim($meta->getNotes() . "\n\n" . $branch->getNotes() . "\n\n" . $build->getNotes());
+        if($build->getNotes() || $meta->getNotes()) {
+            $data['notes'] = trim($meta->getNotes() . "\n\n" . $build->getNotes());
         }
 
         if($build->getFolder()) {
@@ -98,6 +103,18 @@ class JSONBuilder
                         $pkg['environment'][] = array(
                             'type' => $envVar->getType(),
                             'value' => $envVar->getValue()
+                        );
+                    }
+                }
+
+                if(count($package->getExecutables()) > 0) {
+                    $pkg['executables'] = array();
+
+                    foreach ($package->getExecutables() as $exe) {
+                        $pkg['executables'][] = array(
+                            'version' => $exe->getVersion(),
+                            'file' => $exe->getFile(),
+                            'debug' => $exe->getDebug()
                         );
                     }
                 }

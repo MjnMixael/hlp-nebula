@@ -29,8 +29,9 @@ namespace HLP\NebulaBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Ngld\CommonBundle\DependencyInjection\ContainerRef;
 
-class DependencyType extends AbstractType
+class ExecutableType extends AbstractType
 {
         /**
      * @param FormBuilderInterface $builder
@@ -39,15 +40,11 @@ class DependencyType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('depId',    'text', array('pattern' => '^[\\w]+[-\\w]*$'))
-            ->add('depPkgs', 'collection', array('type'            => 'text',
-                                                  'allow_add'       => true,
-                                                  'allow_delete'    => true,
-                                                  'prototype'       => true,
-                                                  'prototype_name'  => '__depPkgs_prototype__',
-                                                  'pattern' => '^[\\w]+[-\\w ]*$'))
-            ->add('version',  'text')
-        ;
+            ->add('version', 'text', array(
+                    'pattern' => ContainerRef::get()->getParameter('hlp_nebula.semver.nocap_pattern')
+                ))
+            ->add('file',    'text',     array('pattern' => '^([\\\/]?[^\0\\\/:\*\?"<>\|]+)*[\\\/]?$'))
+            ->add('debug',   'checkbox', array('required' => false));
     }
     
     /**
@@ -56,7 +53,7 @@ class DependencyType extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
-            'data_class' => 'HLP\NebulaBundle\Entity\Dependency'
+            'data_class' => 'HLP\NebulaBundle\Entity\Executable'
         ));
     }
 
@@ -65,6 +62,6 @@ class DependencyType extends AbstractType
      */
     public function getName()
     {
-        return 'hlp_nebulabundle_dependency';
+        return 'hlp_nebulabundle_executable';
     }
 }

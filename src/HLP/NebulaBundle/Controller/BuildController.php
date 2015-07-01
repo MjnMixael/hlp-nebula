@@ -51,13 +51,18 @@ class BuildController extends Controller
     public function createAction(Request $request, Branch $branch)
     {
         $build = new Build;
-        $form = $this->createForm(new BuildType($semver_pat), $build);
+        // Get the latest build in this branch.
+        $latest = $this->getDoctrine()->getManager()->getRepository('HLPNebulaBundle:Build')
+            ->findSingleBuild($branch->getMeta()->getMetaId(), $branch->getBranchid());
+
+        $build->setVersion($latest->getVersion());
+        $form = $this->createForm(new BuildType(), $build);
 
         $form->handleRequest($request);
 
         if ($form->isValid())
         {
-            $build->setStatus(Build::WAITING);
+            $build->setState(Build::WAITING);
             $branch->addBuild($build);
             
             $em = $this->getDoctrine()->getManager();
@@ -89,16 +94,66 @@ class BuildController extends Controller
             'form'   => $form->createView()
         ));
     }
+
+    /**
+     * @ParamConverter("build", options={"mapping": {"meta": "meta", "branch": "branch", "build": "version"}, "repository_method" = "findOneWithParents"})
+     * @Security("is_granted('EDIT', build.getMeta())")
+     */
+    public function editAction(Request $request, Build $build)
+    {
+        if ($build->getState() != Build::FAILED)
+        {
+            $request->getSession()->getFlashBag()
+                ->add('error', 'You can only edit failed builds!');
+
+            return $this->redirect($this->generateUrl('hlp_nebula_build', array(
+                'meta'   => $build->getMeta(),
+                'branch' => $build->getBranch(),
+                'build'  => $build
+            )));
+        }
+
+        $form = $this->createForm(new BuildType(), $build);
+        $form->handleRequest($request);
+
+        if ($form->isValid())
+        {
+            $build->setState(Build::WAITING);
+            $this->getDoctrine()->getManager()->flush();
+
+            return $this->redirect($this->generateUrl('hlp_nebula_process', array(
+                'meta'   => $build->getMeta(),
+                'branch' => $build->getBranch(),
+                'build'  => $build
+            )));
+        }
+        
+        if ((!$form->isValid()) && $request->isMethod('POST') )
+        {
+            $request->getSession()
+                ->getFlashBag()
+                ->add('error', '<strong>Invalid data !</strong> Please check this form again.');
+        }
+        
+        return $this->render('HLPNebulaBundle:Build:create.html.twig', array(
+            'meta'   => $build->getMeta(),
+            'branch' => $build->getBranch(),
+            'form'   => $form->createView()
+        ));
+    }
     
     /**
      * @ParamConverter("build", options={"mapping": {"meta": "meta", "branch": "branch", "build": "version"}, "repository_method" = "findOneWithParents"})
      */
     public function showDetailsAction(Build $build)
     {
+        $data = json_decode($build->getGeneratedJSON())->mods[0];
+
         return $this->render('HLPNebulaBundle:Build:details.html.twig', array(
-            'meta'   => $build->getMeta(),
-            'branch' => $build->getBranch(),
-            'build'  => $build
+            'meta'       => $build->getMeta(),
+            'branch'     => $build->getBranch(),
+            'build'      => $build,
+            'build_data' => $data
         ));
     }
     
@@ -109,20 +164,34 @@ class BuildController extends Controller
     {
         $build_data = json_decode($build->getGeneratedJSON())->mods[0];
 
+        $packages = array();
         $archives = array();
         foreach ($build_data->packages as $pkg) {
+            $files = array();
+
             foreach ($pkg->files as $file) {
                 if ($file->is_archive) {
                     $archives[$pkg->name . '/' . $file->filename] = $file;
                 }
             }
+
+            foreach ($pkg->filelist as $file) {
+                $files[$file->filename] = $file;
+            }
+
+            ksort($files);
+            $pkg->filelist = $files;
+
+            $packages[$pkg->name] = $pkg;
         }
+
+        ksort($packages);
         
         return $this->render('HLPNebulaBundle:Build:files.html.twig', array(
             'meta'       => $build->getMeta(),
             'branch'     => $build->getBranch(),
             'build'      => $build,
-            'build_data' => $build_data,
+            'packages'   => $packages,
             'archives'   => $archives
         ));
     }
@@ -166,7 +235,7 @@ class BuildController extends Controller
 
     /**
      * @ParamConverter("build", options={"mapping": {"meta": "meta", "branch": "branch", "build": "version"}, "repository_method" = "findOneWithParents"})
-     * @Security("is_granted('EDIT', build.getBranch().getMeta())")
+     * @Security("is_granted('EDIT', build.getMeta())")
      */
     public function newBuildFromAction(Request $request, Build $build)
     {
@@ -214,7 +283,7 @@ class BuildController extends Controller
 
     /**
      * @ParamConverter("build", options={"mapping": {"meta": "meta", "branch": "branch", "build": "version"}, "repository_method" = "findOneWithParents"})
-     * @Security("is_granted('EDIT', build.getBranch().getMeta())")
+     * @Security("is_granted('EDIT', build.getMeta())")
      */
     public function transferAction(Request $request, Build $build)
     {
@@ -237,7 +306,7 @@ class BuildController extends Controller
             $request->getSession()->getFlashBag()
                 ->add('success', "New build <strong>version ".$newBuild->getVersion()."</strong> successfully created from <strong>version ".$build->getVersion()."</strong>.");
 
-            return $this->redirect($this->generateUrl('hlp_nebula_process', array(
+            return $this->redirect($this->generateUrl('hlp_nebula_build', array(
                 'meta'    => $meta,
                 'branch' => $newBuild->getBranch(),
                 'build'  => $newBuild
@@ -250,10 +319,10 @@ class BuildController extends Controller
                 ->add('error', '<strong>Invalid data !</strong> Please check this form again.');
         }
 
-        return $this->render('HLPNebulaBundle:Build:create.html.twig', array(
+        return $this->render('HLPNebulaBundle:Build:transfer_form.html.twig', array(
             'meta'   => $branch->getMeta(),
             'branch' => $branch,
-            // 'build'  => $build,
+            'build'  => $build,
             'form'   => $form->createView()
         ));
     }
@@ -282,7 +351,7 @@ class BuildController extends Controller
                     $data = json_encode(Array('mods' => Array($data)));
             
                     $webhook = $this->generateUrl('hlp_nebula_process_finalise', array(
-                        'meta'    => $meta,
+                        'meta'   => $meta,
                         'branch' => $branch,
                         'build'  => $build
                     ), true);
@@ -343,7 +412,7 @@ class BuildController extends Controller
 
     /**
      * @ParamConverter("build", options={"mapping": {"meta": "meta", "branch": "branch", "build": "version"}, "repository_method" = "findOneWithParents"})
-     * @Security("is_granted('EDIT', build.getBranch().getMeta())")
+     * @Security("is_granted('EDIT', build.getMeta())")
      */
     public function reprocessAction(Build $build)
     {
@@ -443,14 +512,14 @@ class BuildController extends Controller
     
         if($build->getState() == Build::PROCESSING)
         {
-            $build->setState(Build::PROCESSING);
+            $build->setState(Build::FAILED);
             $this->getDoctrine()->getManager()->flush();
       
             $request->getSession()->getFlashBag()
                 ->add('warning', "Build <strong>version ".$build->getVersion()."</strong> has been marked as failed. Processing canceled.");
         }
 
-        return $this->redirect($this->generateUrl('hlp_nebula_build', array(
+        return $this->redirect($this->generateUrl('hlp_nebula_repository_build_edit', array(
             'meta'   => $meta,
             'branch' => $branch,
             'build'  => $build

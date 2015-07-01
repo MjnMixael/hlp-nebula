@@ -43,4 +43,56 @@
             }
         });
     };
+
+    window.init_build_form = function () {
+        $('form').on('blur', '.pkg-file-url input', function (e) {
+            var url = $(this).val();
+            var name_field = $(this).parents('.well').find('input.pkg-file-name');
+
+            console.log([url, name_field])
+
+            if(name_field.val() == '') {
+                name_field.val(url.split('/').pop());
+            }
+        })
+        .on('change', '.pkg-env-type', function (e) {
+            var $this = $(this);
+            var val_field = $this.parents('.well').find('.pkg-env-value');
+            var rep, choices = null;
+
+            console.log([$this.val(), val_field]);
+
+            switch($this.val()) {
+                case 'os':
+                    choices = ['windows', 'linux', 'macos'];
+                    break;
+
+                case 'cpu_feature':
+                    choices = [
+                        'x86_64','x86_32',
+                        'sse','sse2','avx','sse4_1','sse4_2','ssse3',
+                        'acpi','aes','apic','cid','clflush','cmov','cx16','cx8','dca','de','ds_cpl','dtes64','dts','est','f16c','fma','fpu','fxsr','ht','hypervisor','ia64','mca','mce','mmx','monitor','movbe','msr','mtrr','osxsave','pae','pat','pbe','pcid','pclmulqdq','pdcm','pge','pn','pni','popcnt','pse','pse36','rdrnd','sep','smx','ss','tm','tm2','tsc','tscdeadline','vme','vmx','x2apic','xsave','xtpr'
+                    ];
+                    break;
+
+                default:
+                    rep = $('<input type="text" required>');
+            }
+
+            if(choices) {
+                rep = $('<select>');
+                $.each(choices, function (i, opt) {
+                    rep.append($('<option>').text(opt).prop('value', opt));
+                });
+            }
+
+            $.each(['id', 'class', 'name'], function (i, attr) {
+                rep.attr(attr, val_field.attr(attr));
+            });
+            val_field.replaceWith(rep);
+        })
+        .on('field-added', function (e) {
+            $(this).find('.pkg-env-type').trigger('change');
+        });
+    };
 })(jQuery);

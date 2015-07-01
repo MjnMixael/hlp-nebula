@@ -12,7 +12,10 @@ HLP-Nebula is mostly written in PHP, as a [Symfony2](http://symfony.com/) framew
 
 To run HLP-Nebula, the first thing you need is a working LAMP environment.
 On Ubuntu, use command :
-```sudo apt-get install apache2 php5 mysql-server libapache2-mod-php5 php5-mysql php5-gd```
+```
+sudo apt-get install apache2 php5 mysql-server libapache2-mod-php5 php5-mysql php5-gd
+```
+
 
 ## Install
 
@@ -32,7 +35,7 @@ On Ubuntu, use command :
 
 8. Fill the database with the necessary tables:
    ```bash
-   php app/console doctrine:schema:update --force
+   php app/console doctrine:schema:create --force
    ```
 
 Now you can access the Nebula through the ```web/app.php``` file.
@@ -45,6 +48,7 @@ If you have Apache and mod_rewrite enabled, you should be able to access the ```
    ```bash
    php app/console fos:user:create <username> --super-admin
    ```
+
 2. Now you can login and add your mods.
 
 ## Clients and JSON Specification

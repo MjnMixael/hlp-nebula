@@ -39,7 +39,13 @@ class MetaType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('metaId',          'text')
+            ->add('type',           'choice', array('choices' => array(
+                    'mod'    => 'Mod',
+                    'tc'     => 'Total Conversion',
+                    'addon'  => 'AddOn',
+                    'engine' => 'Engine'
+                )))
+            ->add('metaId',         'text',      array('pattern' => '^[\\w]+[-\\w]*$'))
             ->add('notes',          'textarea',   array('required' => false))
             ->add('firstRelease',   'date',       array('years'  => range(1999, date('Y')),
                                                         'format' => 'dd-MM-yyyy'))

@@ -38,6 +38,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 
 use HLP\NebulaBundle\Entity\Meta;
 use HLP\NebulaBundle\Entity\Branch;
+use HLP\NebulaBundle\Entity\Build;
 use HLP\NebulaBundle\Form\MetaType;
 use HLP\NebulaBundle\Form\MetaEditType;
 use HLP\NebulaBundle\Form\BranchType;
@@ -49,9 +50,21 @@ class MetaController extends Controller
      */
     public function showOverviewAction(Request $request, Meta $meta)
     {
+        $builds = $meta->getDefaultBranch()->getBuilds();
+        $data = array();
+
+        foreach ($builds as $build) {
+            if($build->getState() == Build::DONE) {
+                $b = json_decode($build->getGeneratedJSON())->mods[0];
+                $b->build = $build;
+                $data[] = $b;
+            }
+        }
+        
         return $this->render('HLPNebulaBundle:Meta:overview.html.twig', [
             'meta' => $meta,
-            'builds' => $meta->getDefaultBranch()->getBuilds()
+            'builds' => $builds,
+            'meta_data' => $data
         ]);
     }
 

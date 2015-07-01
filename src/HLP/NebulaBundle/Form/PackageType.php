@@ -39,7 +39,7 @@ class PackageType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('name',           'text')
+            ->add('name',           'text',       array('pattern' => '^[\w- ()]+$'))
             ->add('notes',          'textarea',   array('required' => false))
             ->add('status',         'choice', array(
                     'choices'   => array(
@@ -57,6 +57,14 @@ class PackageType extends AbstractType
                     'prototype'       => true,
                     'prototype_name'  => '__envVars_prototype__')
                 )
+            ->add('executables',    'collection', array(
+                    'type'            => new ExecutableType(),
+                    'error_bubbling'  => false,
+                    'allow_add'       => true,
+                    'allow_delete'    => true,
+                    'by_reference'    => false,
+                    'prototype'       => true,
+                    'prototype_name'  => '__executables_prototype__'))
             ->add('dependencies',   'collection', array(
                     'type'            => new DependencyType(),
                     'error_bubbling'  => false,

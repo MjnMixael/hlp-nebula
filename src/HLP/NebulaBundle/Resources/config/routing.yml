@@ -169,6 +169,10 @@ hlp_nebula_repository_build_files:
     path:     /repository/{meta}/{branch}/{build}/files
     defaults: { _controller: HLPNebulaBundle:Build:showFiles }
 
+hlp_nebula_repository_build_edit:
+    path:     /repository/{meta}/{branch}/{build}/edit
+    defaults: { _controller: HLPNebulaBundle:Build:edit }
+
     
 hlp_nebula_repository_build:
     pattern: /repository/{meta}/{branch}/{build}
@@ -186,7 +190,7 @@ hlp_nebula_new_build:
     
 hlp_nebula_build:
     path:     /repository/{meta}/{branch}/{build}
-    defaults: { _controller: HLPNebulaBundle:Build:index }
+    defaults: { _controller: HLPNebulaBundle:Build:showFiles }
     requirements:
         build:  ^(\d+\.){2}\d+(\-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$
         

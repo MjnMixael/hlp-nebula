@@ -50,7 +50,8 @@ class ActionType extends AbstractType
                                                 'allow_add'       => true,
                                                 'allow_delete'    => true,
                                                 'prototype'       => true,
-                                                'prototype_name'  => '__paths_prototype__'))
+                                                'prototype_name'  => '__paths_prototype__',
+                                                'pattern'         => '^([\\\/]?[^\0\\\/:\?"<>\|]+)*[\\\/]?$'))
             ->add('glob',  'checkbox',    array('required' => false,
                                                 'attr' => array('checked'   => 'checked')))
             ->add('dest',   'text',       array('required' => false))

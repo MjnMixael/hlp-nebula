@@ -24,7 +24,12 @@
     <p class="lead"><small class="text-muted">or </small><a href="{{ path('hlp_nebula_repository_branch', {'meta': meta.metaId, 'branch': branch.branchId}) }}" class="btn btn-danger">Cancel</a></p>
   </div>
   <div class="col-sm-9">
-  {% include "HLPNebulaBundle:Build:_form.html.twig" %}
+    {% include "HLPNebulaBundle:Build:_form.html.twig" %}
   </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script type="text/javascript">init_build_form();</script>
 {% endblock %}

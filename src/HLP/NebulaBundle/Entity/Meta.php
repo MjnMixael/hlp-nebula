@@ -81,6 +81,15 @@ class Meta
     private $id;
 
     /**
+     * @var  string
+     *
+     * @ORM\Column(name="type", type="string", length=30)
+     * @Assert\NotBlank()
+     * @Assert\Length(max=30)
+     */
+    private $type;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="metaId", type="string", length=255)
@@ -151,6 +160,29 @@ class Meta
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * Set type
+     *
+     * @param string $type
+     * @return Meta
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * Get type
+     *
+     * @return string 
+     */
+    public function getType()
+    {
+        return $this->type;
     }
 
     /**

@@ -40,9 +40,14 @@ class BuildType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('version', 'text', array('pattern' => ContainerRef::get()->getParameter('hlp_nebula.semver.nocap_pattern')))
+            ->add('version', 'text', array(
+                    'pattern' => ContainerRef::get()->getParameter('hlp_nebula.semver.nocap_pattern')
+                ))
             ->add('notes',              'textarea', array('required' => false))
-            ->add('folder',             'text',     array('required' => false))
+            ->add('folder',             'text',     array(
+                    'required' => false,
+                    'pattern'  => '^([\\\/]?[^\0\\\/:\*\?"<>\|]+)*[\\\/]?$'
+                ))
             ->add('packages',           'collection', array(
                     'type'            => new PackageType(),
                     'error_bubbling'  => false,

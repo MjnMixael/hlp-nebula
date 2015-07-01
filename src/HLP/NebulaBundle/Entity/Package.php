@@ -49,6 +49,12 @@ class Package
      * @Assert\Valid
      */
     private $dependencies;
+
+    /**
+     * @ORM\OneToMany(targetEntity="HLP\NebulaBundle\Entity\Executable", mappedBy="package", cascade={"persist", "remove"})
+     * @Assert\Valid
+     */
+    private $executables;
     
     /**
      * @ORM\OneToMany(targetEntity="HLP\NebulaBundle\Entity\File", mappedBy="package", cascade={"persist", "remove"})
@@ -77,7 +83,7 @@ class Package
      * @ORM\Column(name="name", type="string", length=255)
      * @Assert\NotBlank()
      * @Assert\Length(max=255)
-     * @Assert\Regex("/^[-\w ]+$/", message="Special characters not allowed in the package name.")
+     * @Assert\Regex("/^[\w- ()]+$/", message="Special characters not allowed in the package name.")
      * @Assert\Regex("/^- /", match=false, message="Dash and space not allowed at the beginning of the package name.")
      */
     private $name;
@@ -303,6 +309,39 @@ class Package
     public function getDependencies()
     {
         return $this->dependencies;
+    }
+
+    /**
+     * Add executables
+     *
+     * @param \HLP\NebulaBundle\Entity\Executable $executables
+     * @return Package
+     */
+    public function addExecutable(\HLP\NebulaBundle\Entity\Executable $executable)
+    {
+        $this->executables[] = $executable;
+        $executable->setPackage($this);
+        return $this;
+    }
+
+    /**
+     * Remove executables
+     *
+     * @param \HLP\NebulaBundle\Entity\Executable $executable
+     */
+    public function removeExecutable(\HLP\NebulaBundle\Entity\Executable $executable)
+    {
+        $this->executables->removeElement($executable);
+    }
+
+    /**
+     * Get executables
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getExecutables()
+    {
+        return $this->executables;
     }
 
     /**

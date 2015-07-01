@@ -49,7 +49,7 @@ class BuildTransferType extends AbstractType
                 'expanded'      => false,
                 'multiple'      => false,
                 'query_builder' => function(\HLP\NebulaBundle\Entity\BranchRepository $repo) use($id, $exclude) {
-                    return $repo->getBranchFromMod($id, $exclude);
+                    return $repo->getBranchQueryBuilder($id, $exclude);
                 }));
     }
     

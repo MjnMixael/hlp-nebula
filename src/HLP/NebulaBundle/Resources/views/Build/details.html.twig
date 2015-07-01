@@ -19,7 +19,7 @@
     {% endif %}
 
     {% if is_granted('EDIT', meta) %}
-        <p>
+        <p class="well">
             {% set params = {'meta': meta.metaId, 'branch': branch.branchId, 'build': build.version} %}
             <a href="{{ path('hlp_nebula_update_build', params) }}" class="btn btn-default">
                 <span class="glyphicon glyphicon-retweet"></span> Copy & update
@@ -44,7 +44,7 @@
 
     <h4>Downloads</h5>
 
-    {% for pkg in build.packages %}
+    {% for pkg in build_data.packages %}
         {% if not (loop.first and loop.last) %}<h6>{{ pkg.name }}</h6>{% endif %}
         <ul>
             {% for file in pkg.files %}
