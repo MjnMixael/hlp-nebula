@@ -1,0 +1,33 @@
+{% extends "HLPNebulaBundle::layout.html.twig" %}
+{% form_theme form 'HLPNebulaBundle:AdvancedUI:form_theme.html.twig' %}
+{% trans_default_domain 'FOSUserBundle' %}
+
+{% block title %}
+    Login
+{% endblock title %}
+
+{% block body %}
+    {# On affiche les messages flash que définissent les contrôleurs du bundle #}
+    {% for key, messages in app.session.flashbag.all() %}
+      {% for message in messages %}
+        <div class="alert alert-info">
+            {{ message|trans({}, 'FOSUserBundle') }}
+        </div>
+
+      {% endfor %}
+    {% endfor %}
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <form action="{{ path('fos_user_registration_register') }}" {{ form_enctype(form) }} method="POST" class="fos_user_registration_register simple-form">
+                {{ form_widget(form) }}
+
+                <div class="nl-field">
+                    <button type="submit" class="btn btn-primary">
+                        {{ 'registration.submit'|trans }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock body %}

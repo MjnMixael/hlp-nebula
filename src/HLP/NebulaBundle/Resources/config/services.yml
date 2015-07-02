@@ -1,7 +1,10 @@
 services:
     hlpnebula.json_builder:
         class: HLP\NebulaBundle\JSONBuilder\JSONBuilder
-        
+        arguments: ['@service_container']
+        tags:
+            - { name: doctrine.event_listener, event: postFlush }
+
     hlp_nebula.knossos:
         class: HLP\NebulaBundle\KSConnect\KSConnect
         arguments: ['%hlp_nebula.knossos.server%', '%hlp_nebula.knossos.apikey%', '%hlp_nebula.knossos.secure%']

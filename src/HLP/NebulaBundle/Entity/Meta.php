@@ -374,6 +374,18 @@ class Meta
     }
 
     /**
+     * Get public branches
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getPublicBranches()
+    {
+        $expr = Criteria::expr()->eq('public', true);
+        $crit = Criteria::create()->where($expr);
+        return $this->branches->matching($crit);
+    }
+
+    /**
      * Get the default branch (usually "master")
      *
      * @return \HLP\NebulaBundle\Entitiy\Branch

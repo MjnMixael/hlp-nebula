@@ -44,18 +44,24 @@
 
     <h4>Downloads</h5>
 
-    {% for pkg in build_data.packages %}
-        {% if not (loop.first and loop.last) %}<h6>{{ pkg.name }}</h6>{% endif %}
-        <ul>
-            {% for file in pkg.files %}
-                <li>
-                    {{ file.filename }}:
-                    {% for url in file.urls %}
-                        {% if not loop.first %} | {% endif %}
-                        <a href="{{ url }}">{{ url|parse_url.host }}</a>
-                    {% endfor %}
-                </li>
-            {% endfor %}
-        </ul>
-    {% endfor %}
+    {% if build_data %}
+        {% for pkg in build_data.packages %}
+            {% if not (loop.first and loop.last) %}<h6>{{ pkg.name }}</h6>{% endif %}
+            <ul>
+                {% for file in pkg.files %}
+                    <li>
+                        {{ file.filename }}:
+                        {% for url in file.urls %}
+                            {% if not loop.first %} | {% endif %}
+                            <a href="{{ url }}">{{ url|parse_url.host }}</a>
+                        {% endfor %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No Downloads found!</p>
+        {% endfor %}
+    {% else %}
+        <p>No Downloads found!</p>
+    {% endif %}
 {% endblock %}

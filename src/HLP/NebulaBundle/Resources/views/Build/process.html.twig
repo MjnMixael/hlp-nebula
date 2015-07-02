@@ -34,9 +34,10 @@
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
+
     {% if not request_failed %}
-        {{ parent() }}
-        <script type="text/javascript" src="{{ converter_script }}"></script>
-        <script type="text/javascript">init_converter({{ ws_url|json_encode|raw }}, {{ ksticket|json_encode|raw }}, {{ is_owner ? 'true' : 'false' }});</script>
+        <script src="{{ converter_script }}"></script>
+        <script>init_converter({{ ws_url|json_encode|raw }}, {{ ksticket|json_encode|raw }}, {{ is_owner ? 'true' : 'false' }});</script>
     {% endif %}
 {% endblock %}

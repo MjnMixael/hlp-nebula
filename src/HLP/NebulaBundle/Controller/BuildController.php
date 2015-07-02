@@ -22,7 +22,7 @@ distributed on an "AS IS" basis,
 express or implied.
 * See the Licence for the specific language governing
 permissions and limitations under the Licence.
-*/ 
+*/
 
 namespace HLP\NebulaBundle\Controller;
 
@@ -32,9 +32,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-
+use Symfony\Component\Filesystem\Filesystem;
 
 use HLP\NebulaBundle\Entity\Meta;
 use HLP\NebulaBundle\Entity\Branch;
@@ -50,21 +49,25 @@ class BuildController extends Controller
      */
     public function createAction(Request $request, Branch $branch)
     {
-        $build = new Build;
+        $build = new Build();
         // Get the latest build in this branch.
         $latest = $this->getDoctrine()->getManager()->getRepository('HLPNebulaBundle:Build')
             ->findSingleBuild($branch->getMeta()->getMetaId(), $branch->getBranchid());
 
-        $build->setVersion($latest->getVersion());
+        if ($latest === null) {
+            $build->setVersion('1.0.0');
+        } else {
+            $build->setVersion($latest->getVersion());
+        }
+
         $form = $this->createForm(new BuildType(), $build);
 
         $form->handleRequest($request);
 
-        if ($form->isValid())
-        {
+        if ($form->isValid()) {
             $build->setState(Build::WAITING);
             $branch->addBuild($build);
-            
+
             $em = $this->getDoctrine()->getManager();
 
             $em->persist($build);
@@ -73,21 +76,19 @@ class BuildController extends Controller
             // $request->getSession()
             //     ->getFlashBag()
             //     ->add('success', 'New build <strong>version '.$build->getVersion().'</strong> successfully created.');
-
             return $this->redirect($this->generateUrl('hlp_nebula_process', array(
                 'meta'   => $build->getMeta(),
                 'branch' => $build->getBranch(),
                 'build'  => $build
             )));
         }
-        
-        if ((!$form->isValid()) && $request->isMethod('POST') )
-        {
+
+        if ((!$form->isValid()) && $request->isMethod('POST')) {
             $request->getSession()
                 ->getFlashBag()
                 ->add('error', '<strong>Invalid data !</strong> Please check this form again.');
         }
-        
+
         return $this->render('HLPNebulaBundle:Build:create.html.twig', array(
             'meta'   => $branch->getMeta(),
             'branch' => $branch,
@@ -101,8 +102,7 @@ class BuildController extends Controller
      */
     public function editAction(Request $request, Build $build)
     {
-        if ($build->getState() != Build::FAILED)
-        {
+        if ($build->getState() != Build::FAILED) {
             $request->getSession()->getFlashBag()
                 ->add('error', 'You can only edit failed builds!');
 
@@ -116,8 +116,7 @@ class BuildController extends Controller
         $form = $this->createForm(new BuildType(), $build);
         $form->handleRequest($request);
 
-        if ($form->isValid())
-        {
+        if ($form->isValid()) {
             $build->setState(Build::WAITING);
             $this->getDoctrine()->getManager()->flush();
 
@@ -127,27 +126,30 @@ class BuildController extends Controller
                 'build'  => $build
             )));
         }
-        
-        if ((!$form->isValid()) && $request->isMethod('POST') )
-        {
+
+        if ((!$form->isValid()) && $request->isMethod('POST')) {
             $request->getSession()
                 ->getFlashBag()
                 ->add('error', '<strong>Invalid data !</strong> Please check this form again.');
         }
-        
+
         return $this->render('HLPNebulaBundle:Build:create.html.twig', array(
             'meta'   => $build->getMeta(),
             'branch' => $build->getBranch(),
             'form'   => $form->createView()
         ));
     }
-    
+
     /**
      * @ParamConverter("build", options={"mapping": {"meta": "meta", "branch": "branch", "build": "version"}, "repository_method" = "findOneWithParents"})
+     * @Security("build.getBranch().isPublic() or is_granted('EDIT', build.getMeta())")
      */
     public function showDetailsAction(Build $build)
     {
-        $data = json_decode($build->getGeneratedJSON())->mods[0];
+        $data = json_decode($build->getGeneratedJSON());
+        if ($data) {
+            $data = $data->mods[0];
+        }
 
         return $this->render('HLPNebulaBundle:Build:details.html.twig', array(
             'meta'       => $build->getMeta(),
@@ -156,9 +158,10 @@ class BuildController extends Controller
             'build_data' => $data
         ));
     }
-    
+
     /**
      * @ParamConverter("build", options={"mapping": {"meta": "meta", "branch": "branch", "build": "version"}, "repository_method" = "findOneWithParents"})
+     * @Security("build.getBranch().isPublic() or is_granted('EDIT', build.getMeta())")
      */
     public function showFilesAction(Build $build)
     {
@@ -186,7 +189,7 @@ class BuildController extends Controller
         }
 
         ksort($packages);
-        
+
         return $this->render('HLPNebulaBundle:Build:files.html.twig', array(
             'meta'       => $build->getMeta(),
             'branch'     => $build->getBranch(),
@@ -196,38 +199,74 @@ class BuildController extends Controller
         ));
     }
 
-    public function rawAction($path)
+    public function rawAction(Request $request, $path)
     {
         $path = explode('/', $path);
 
-        switch(count($path)) {
+        switch (count($path)) {
             case 1:
                 $path[] = 'default';
+                // no break
             case 2:
-                $path[] = 'latest';
+                $path[] = 'all';
         }
 
         list($metaId, $branch, $version) = $path;
 
-        if ($branch == 'default') $branch = null;
-        if ($version == 'latest') $version = null;
-
-        $build = $this->getDoctrine()->getManager()->getRepository('HLPNebulaBundle:Build')
-            ->findSingleBuild($metaId, $branch, $version);
-
-        if ($build === null) {
-            throw new NotFoundHttpException('Build not found!');
+        if ($branch == 'default') {
+            $branch = null;
+        }
+        if ($version == 'latest') {
+            $version = null;
         }
 
-        if (null == $build->getGeneratedJSON()) {
-            if ($build->getState() == Build::FAILED) {
-                throw new NotFoundHttpException("No JSON data for this build, validation failed.");
-            } else {
-                throw new NotFoundHttpException("No JSON data for this build, validation not finished.");
+        $em = $this->getDoctrine()->getManager();
+
+        if ($version == 'all') {
+            $branch = $em->getRepository('HLPNebulaBundle:Branch')->findSingleBranch($metaId, $branch);
+
+            if ($branch === null || (!$branch->isPublic() && urldecode($request->getQueryString()) != $branch->getPrivateKey())) {
+                throw new NotFoundHttpException('Branch not found!');
             }
+
+            $data = '';
+            foreach ($branch->getBuilds() as $build) {
+                $bd = $build->getGeneratedJSON();
+                $start = strpos($bd, '"mods":[') + 8;
+                $end = strrpos($bd, ']');
+                $data .= ',' . substr($bd, $start, $end);
+            }
+
+            $response = new Response('{"mods":[' . substr($data, 1) . ']}');
+
+        } else {
+            $build = $em->getRepository('HLPNebulaBundle:Build')->findSingleBuild($metaId, $branch, $version);
+
+            if ($build === null) {
+                throw new NotFoundHttpException('Build not found!');
+            }
+
+            $branch = $build->getBranch();
+
+            if (!$branch->isPublic() && urldecode($request->getQueryString()) != $branch->getPrivateKey()) {
+                // Access denied!
+                // NOTE: I'm not delivering a 403 here since that would tell an attacker
+                //       that a hidden branch exists.
+
+                throw new NotFoundHttpException('Build not found!');
+            }
+
+            if (null == $build->getGeneratedJSON()) {
+                if ($build->getState() == Build::FAILED) {
+                    throw new NotFoundHttpException("No JSON data for this build, validation failed.");
+                } else {
+                    throw new NotFoundHttpException("No JSON data for this build, validation not finished.");
+                }
+            }
+
+            $response = new Response($build->getGeneratedJSON());
         }
 
-        $response = new Response($build->getGeneratedJSON());
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
@@ -241,8 +280,8 @@ class BuildController extends Controller
     {
         $branch = $build->getBranch();
         $meta = $branch->getMeta();
-        
-        if (false === $this->get('security.context')->isGranted('EDIT', $meta)) {
+
+        if (false === $this->isGranted('EDIT', $meta)) {
             throw new AccessDeniedException('Unauthorised access!');
         }
 
@@ -250,8 +289,7 @@ class BuildController extends Controller
         $form = $this->createForm(new BuildType(), $newBuild);
         $form->handleRequest($request);
 
-        if ($form->isValid())
-        {
+        if ($form->isValid()) {
             $em = $this->getDoctrine()->getManager();
             $em->persist($newBuild);
             $em->flush();
@@ -267,8 +305,7 @@ class BuildController extends Controller
             )));
         }
 
-        if ((!$form->isValid()) && $request->isMethod('POST') )
-        {
+        if ((!$form->isValid()) && $request->isMethod('POST')) {
             $request->getSession()->getFlashBag()
                 ->add('error', '<strong>Invalid data !</strong> Please check this form again.');
         }
@@ -290,14 +327,13 @@ class BuildController extends Controller
         $branch = $build->getBranch();
         $meta = $branch->getMeta();
 
-        if (false === $this->get('security.context')->isGranted('EDIT', $meta)) {
+        if (false === $this->isGranted('EDIT', $meta)) {
             throw new AccessDeniedException('Unauthorised access!');
         }
 
         $newBuild = clone $build;
         $form = $this->createForm(new BuildTransferType(), $newBuild);
-        if ($form->handleRequest($request)->isValid())
-        {
+        if ($form->handleRequest($request)->isValid()) {
 
             $em = $this->getDoctrine()->getManager();
             $em->persist($newBuild);
@@ -313,8 +349,7 @@ class BuildController extends Controller
             )));
         }
 
-        if ((!$form->isValid()) && $request->isMethod('POST') )
-        {
+        if ((!$form->isValid()) && $request->isMethod('POST')) {
             $request->getSession()->getFlashBag()
                 ->add('error', '<strong>Invalid data !</strong> Please check this form again.');
         }
@@ -326,7 +361,7 @@ class BuildController extends Controller
             'form'   => $form->createView()
         ));
     }
-  
+
     /**
      * @ParamConverter("build", options={"mapping": {"meta": "meta", "branch": "branch", "build": "version"}, "repository_method" = "findOneWithParents"})
      */
@@ -334,41 +369,33 @@ class BuildController extends Controller
     {
         $branch = $build->getBranch();
         $meta = $branch->getMeta();
-        $sec = $this->get('security.context');
-    
-        if($build->getState() <= Build::PROCESSING)
-        {
+
+        if ($build->getState() <= Build::PROCESSING) {
             $ks = $this->container->get('hlpnebula.knossos');
 
-            if ($build->getState() == Build::WAITING)
-            {
-                if ($sec->isGranted('EDIT', $meta))
-                {
-                    $jsonBuilder = $this->container
-                        ->get('hlpnebula.json_builder');
-            
+            if ($build->getState() == Build::WAITING) {
+                if ($this->isGranted('EDIT', $meta)) {
+                    $jsonBuilder = $this->container->get('hlpnebula.json_builder');
+
                     $data = $jsonBuilder->createFromBuild($build, false);
-                    $data = json_encode(Array('mods' => Array($data)));
-            
+                    $data = json_encode(array('mods' => array($data)));
+
                     $webhook = $this->generateUrl('hlp_nebula_process_finalise', array(
                         'meta'   => $meta,
                         'branch' => $branch,
                         'build'  => $build
                     ), true);
-            
+
                     $ksresponse = $ks->requestConversion($data, $webhook);
-            
-                    if($ksresponse)
-                    {
+
+                    if ($ksresponse) {
                         $build->setState(Build::PROCESSING);
                         $build->setConverterToken($ksresponse->token);
                         $build->setConverterTicket($ksresponse->ticket);
-              
+
                         $em = $this->getDoctrine()->getManager();
                         $em->flush();
-                    }
-                    else
-                    {
+                    } else {
                         return $this->render('HLPNebulaBundle:Build:process.html.twig', array(
                             'meta'          => $meta,
                             'branch'        => $branch,
@@ -398,7 +425,7 @@ class BuildController extends Controller
                 'ksticket'         => $ksticket,
                 'converter_script' => $ks->getScriptURL(),
                 'ws_url'           => $ks->getWsURL(),
-                'is_owner'         => $sec->isGranted('EDIT', $meta),
+                'is_owner'         => $this->isGranted('EDIT', $meta),
                 'request_failed'   => false
             ));
         }
@@ -433,58 +460,46 @@ class BuildController extends Controller
     {
         $branch = $build->getBranch();
         $meta = $branch->getMeta();
-    
-        if($build->getState() == Build::PROCESSING && $build->getConverterTicket() !== null)
-        {
+
+        if ($build->getState() == Build::PROCESSING && $build->getConverterTicket() !== null) {
             $ks = $this->container->get('hlpnebula.knossos');
             $ksresponse = $ks->retrieveConverted($build->getConverterTicket(), $build->getConverterToken());
-    
-            if($ksresponse)
-            {
-                if($ksresponse->finished == true)
-                {
-                    if($ksresponse->success == true)
-                    {
+
+            if ($ksresponse) {
+                if ($ksresponse->finished == true) {
+                    if ($ksresponse->success == true) {
                         $build->setGeneratedJSON($ksresponse->json);
                         $build->setState(Build::DONE);
-                        
+
                         $request->getSession()->getFlashBag()
                             ->add('success', "Build <strong>version ".$build->getVersion()."</strong> has been successfully validated.");
-                    }
-                    else
-                    {
+                    } else {
                         $build->setState(Build::FAILED);
-                        
+
                         $request->getSession()->getFlashBag()
                             ->add('warning', "Build <strong>version ".$build->getVersion()."</strong> validation has failed.");
                     }
 
                     $this->getDoctrine()->getManager()->flush();
-                }
-                else
-                {
+                } else {
                     return $this->redirect($this->generateUrl('hlp_nebula_process', array(
                         'meta'   => $meta,
                         'branch' => $branch,
                         'build'  => $build
                     )));
                 }
-            }
-            else
-            {
-                $sec = $this->container->get('security.context');
+            } else {
                 return $this->render('HLPNebulaBundle:Build:process.html.twig', array(
                     'meta'          => $meta,
                     'branch'        => $branch,
                     'build'         => $build,
-                    'is_owner'      => $sec->isGranted('EDIT', $meta),
+                    'is_owner'      => $this->isGranted('EDIT', $meta),
                     'request_failed' => true
                 ));
             }
         }
 
-        if($request->getMethod() == 'POST')
-        {      
+        if ($request->getMethod() == 'POST') {
             $response = new Response(json_encode(array('cancelled' => $build->getState() == Build::FAILED)));
             $response->headers->set('Content-Type', 'application/json');
 
@@ -505,16 +520,15 @@ class BuildController extends Controller
     {
         $branch = $build->getBranch();
         $meta = $branch->getMeta();
-    
-        if (false === $this->get('security.context')->isGranted('EDIT', $meta)) {
+
+        if (false === $this->isGranted('EDIT', $meta)) {
             throw new AccessDeniedException('Unauthorised access!');
         }
-    
-        if($build->getState() == Build::PROCESSING)
-        {
+
+        if ($build->getState() == Build::PROCESSING) {
             $build->setState(Build::FAILED);
             $this->getDoctrine()->getManager()->flush();
-      
+
             $request->getSession()->getFlashBag()
                 ->add('warning', "Build <strong>version ".$build->getVersion()."</strong> has been marked as failed. Processing canceled.");
         }
@@ -534,13 +548,12 @@ class BuildController extends Controller
         $branch = $build->getBranch();
         $meta = $branch->getMeta();
 
-        if (false === $this->get('security.context')->isGranted('EDIT', $meta)) {
+        if (false === $this->isGranted('EDIT', $meta)) {
             throw new AccessDeniedException('Unauthorized access!');
         }
 
         $form = $this->createFormBuilder()->getForm();
-        if ($form->handleRequest($request)->isValid())
-        {
+        if ($form->handleRequest($request)->isValid()) {
             $em = $this->getDoctrine()->getManager();
             $em->remove($build);
             $em->flush();

@@ -20,7 +20,7 @@ distributed on an "AS IS" basis,
 express or implied.
 * See the Licence for the specific language governing
 permissions and limitations under the Licence.
-*/ 
+*/
 
 namespace HLP\NebulaBundle\Controller;
 
@@ -42,31 +42,30 @@ class BranchController extends Controller
 {
     /**
      * @ParamConverter("branch", options={"mapping": {"meta": "meta", "branch": "branchId"}, "repository_method" = "findOneWithParent"})
+     * @Security("branch.isPublic() or is_granted('EDIT', branch.getMeta())")
      */
     public function showDetailsAction(Request $request, Branch $branch)
     {
-        $session = new Session();
-        $session->set('branch_refer', $this->getRequest()
-                                           ->getUri()
-        );
-        
+        $request->getSession()->set('branch_refer', $this->getRequest()->getUri());
+
         return $this->render('HLPNebulaBundle:Branch:details.html.twig', array(
             'meta'   => $branch->getMeta(),
             'branch' => $branch
         ));
     }
-    
+
     /**
      * @ParamConverter("branch", options={"mapping": {"meta": "meta", "branch": "branchId"}, "repository_method" = "findOneWithParent"})
+     * @Security("branch.isPublic() or is_granted('EDIT', branch.getMeta())")
      */
     public function showBuildsAction(Request $request, Branch $branch, $page)
     {
         if ($page < 1) {
             throw $this->createNotFoundException("Page ".$page." not found.");
         }
-        
+
         $nbPerPage = 10;
-        
+
         $buildsList = $this->getDoctrine()
             ->getManager()
             ->getRepository('HLPNebulaBundle:Build')
@@ -74,16 +73,16 @@ class BranchController extends Controller
         ;
 
         $nbPages = ceil(count($buildsList)/$nbPerPage);
-        
+
         if ($page > $nbPages && $nbPages != 0) {
             throw $this->createNotFoundException("Page ".$page." not found.");
         }
-        
+
         $session = new Session();
         $session->set('build_refer', $this->getRequest()
                                            ->getUri()
         );
-    
+
         return $this->render('HLPNebulaBundle:Branch:builds.html.twig', array(
             'meta'   => $branch->getMeta(),
             'branch' => $branch,
@@ -92,9 +91,10 @@ class BranchController extends Controller
             'page' => $page
         ));
     }
-    
+
     /**
      * @ParamConverter("branch", options={"mapping": {"meta": "meta", "branch": "branchId"}, "repository_method" = "findOneWithParent"})
+     * @Security("branch.isPublic() or is_granted('EDIT', branch.getMeta())")
      */
     public function showActivityAction(Branch $branch)
     {
@@ -103,7 +103,7 @@ class BranchController extends Controller
             'branch' => $branch
         ));
     }
-    
+
     /**
      * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
      * @Security("is_granted('EDIT', meta)")
@@ -111,7 +111,7 @@ class BranchController extends Controller
     public function createAction(Request $request, Meta $meta)
     {
         $branch = new Branch;
-        
+
         $form = $this->createForm(new BranchType(), $branch);
 
         if ($form->handleRequest($request)->isValid())
@@ -119,12 +119,14 @@ class BranchController extends Controller
             if ($meta->getNbBranches() == 0) {
                 $branch->setIsDefault(true);
             }
-            
-            $meta->addBranch($branch);
-            
-            $em = $this->getDoctrine()
-                ->getManager();
 
+            if (!$branch->isPublic()) {
+                $branch->setPrivateKey();
+            }
+
+            $meta->addBranch($branch);
+
+            $em = $this->getDoctrine()->getManager();
             $em->persist($branch);
             $em->flush();
 
@@ -143,7 +145,7 @@ class BranchController extends Controller
             'form'  => $form->createView()
         ));
     }
-    
+
     /**
      * @ParamConverter("branch", options={"mapping": {"meta": "meta", "branch": "branchId"}, "repository_method" = "findOneWithParent"})
      * @Security("is_granted('EDIT', branch.getMeta())")
@@ -156,10 +158,7 @@ class BranchController extends Controller
         $form = $this->createForm(new BranchEditType(), $branch);
 
         if ($form->handleRequest($request)->isValid()) {
-            $em = $this->getDoctrine()
-                ->getManager();
-
-            $em->flush();
+            $this->getDoctrine()->getManager()->flush();
 
             $request->getSession()
                 ->getFlashBag()
@@ -175,7 +174,7 @@ class BranchController extends Controller
             'referURL' => $referURL
         ));
     }
-  
+
     /**
      * @ParamConverter("branch", options={"mapping": {"meta": "meta", "branch": "branchId"}, "repository_method" = "findOneWithParent"})
      * @Security("is_granted('EDIT', branch.getMeta())")
@@ -185,15 +184,10 @@ class BranchController extends Controller
         $session = new Session();
         $referURL = $session->get('branch_refer');
 
-        $form = $this->createFormBuilder()
-            ->getForm();
+        $form = $this->createFormBuilder()->getForm();
 
         if ($form->handleRequest($request)->isValid()) {
-            $branch->getMeta()->removeBranch($branch);
-            
-            $em = $this->getDoctrine()
-                ->getManager();
-
+            $em = $this->getDoctrine()->getManager();
             $em->remove($branch);
             $em->flush();
 
@@ -212,5 +206,35 @@ class BranchController extends Controller
             'form'      => $form->createView(),
             'referURL'  => $referURL
         ));
+    }
+
+    /**
+     * @ParamConverter("branch", options={"mapping": {"meta": "meta", "branch": "branchId"}, "repository_method" = "findOneWithParent"})
+     */
+    public function repoAction(Branch $branch)
+    {
+        if (!$branch->isPublic()) {
+            throw new NotFoundHttpException('Branch not found!');
+        }
+
+        $response = new Response($branch->getGeneratedJson());
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
+    }
+
+    /**
+     * @ParamConverter("branch", options={"mapping": {"meta": "meta", "branch": "branchId"}, "repository_method" = "findOneWithParent"})
+     */
+    public function privRepoAction(Branch $branch, $key)
+    {
+        if ($branch->isPublic() || $branch->getPrivateKey() != $key) {
+            throw new NotFoundHttpException('Branch not found!');
+        }
+
+        $response = new Response($branch->getGeneratedJson());
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
     }
 }

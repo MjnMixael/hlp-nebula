@@ -22,7 +22,7 @@ distributed on an "AS IS" basis,
 express or implied.
 * See the Licence for the specific language governing
 permissions and limitations under the Licence.
-*/ 
+*/
 
 namespace HLP\NebulaBundle\Entity;
 
@@ -53,16 +53,31 @@ class BranchRepository extends EntityRepository
     public function getBranchQueryBuilder($meta, $page = 1, $nbPerPage = 0)
     {
         $qb = $this->createQueryBuilder('b')
-            ->leftJoin('b.meta', 'm')
-            ->where('m = :meta')
-            ->setParameter('meta', $meta);
+            ->leftJoin('b.meta', 'm');
+
+        if ($meta !== null) {
+            $qb->where('m = :meta')
+                ->setParameter('meta', $meta);
+        }
 
         return $qb;
     }
 
-    public function getBranches($meta, $page = 1, $nbPerPage = 0)
+    public function getBranches($meta = null, $page = 1, $nbPerPage = 0)
     {
         return $this->getBranchQueryBuilder($meta, $page, $nbPerPage)->getQuery()->getResult();
+    }
+
+    public function getPublicBranches($meta = null)
+    {
+        return $this->getBranchQueryBuilder($meta)
+            ->where('b.public = true')->getQuery()->getResult();
+    }
+
+    public function getDefaultBranches()
+    {
+        return $this->getBranchQueryBuilder(null)
+            ->where('b.isDefault = true')->getQuery()->getResult();
     }
 
     public function findSingleBranch($metaId, $branchId = null)

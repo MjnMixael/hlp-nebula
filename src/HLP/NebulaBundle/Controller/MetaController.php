@@ -20,7 +20,7 @@ distributed on an "AS IS" basis,
 express or implied.
 * See the Licence for the specific language governing
 permissions and limitations under the Licence.
-*/ 
+*/
 
 namespace HLP\NebulaBundle\Controller;
 
@@ -60,7 +60,7 @@ class MetaController extends Controller
                 $data[] = $b;
             }
         }
-        
+
         return $this->render('HLPNebulaBundle:Meta:overview.html.twig', [
             'meta' => $meta,
             'builds' => $builds,
@@ -75,30 +75,31 @@ class MetaController extends Controller
     {
         $session = new Session();
         $session->set('meta_refer', $this->getRequest()->getUri());
-      
+
         return $this->render('HLPNebulaBundle:Meta:details.html.twig', array(
             'meta'   => $meta
         ));
     }
-    
+
     /**
      * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
      */
     public function showBranchesAction(Request $request, Meta $meta)
     {
-        $branchesList = $this->getDoctrine()->getManager()
-            ->getRepository('HLPNebulaBundle:Branch')->getBranches($meta);
+        if($this->isGranted('EDIT', $meta)) {
+            $branches = $meta->getBranches();
+        } else {
+            $branches = $meta->getPublicBranches();
+        }
 
-        
-        $session = new Session();
-        $session->set('branch_refer', $this->getRequest()->getUri());
-    
+        $request->getSession()->set('branch_refer', $this->getRequest()->getUri());
+
         return $this->render('HLPNebulaBundle:Meta:branches.html.twig', array(
             'meta'           => $meta,
-            'branchesList'   => $branchesList,
+            'branchesList'   => $branches,
         ));
     }
-    
+
     /**
      * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
      */
@@ -107,20 +108,20 @@ class MetaController extends Controller
         if ($page < 1) {
             throw $this->createNotFoundException("Page ".$page." not found.");
         }
-        
+
         $nbPerPage = 10;
-        
+
         $usersList = $this->getDoctrine()->getManager()
             ->getRepository('HLPNebulaBundle:User')
             ->getUsers($meta, $page, $nbPerPage)
         ;
 
         $nbPages = ceil(count($usersList)/$nbPerPage);
-        
+
         if ($page > $nbPages && $nbPages != 0) {
             throw $this->createNotFoundException("Page ".$page." not found.");
         }
-        
+
         return $this->render('HLPNebulaBundle:Meta:team.html.twig', array(
             'meta'  => $meta,
             'usersList' => $usersList,
@@ -128,7 +129,7 @@ class MetaController extends Controller
             'page' => $page
         ));
     }
-    
+
     /**
      * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
      */
@@ -138,16 +139,16 @@ class MetaController extends Controller
             'meta'   => $meta
         ));
     }
-    
+
     /**
      * @Security("has_role('ROLE_USER')")
      */
     public function createAction(Request $request)
     {
         $meta = new Meta;
-        
+
         $form = $this->createForm(new MetaType(), $meta);
-        
+
         if ($form->handleRequest($request)->isValid())
         {
             $defaultBranch = new Branch;
@@ -155,13 +156,12 @@ class MetaController extends Controller
             $defaultBranch->setName("Master");
             $defaultBranch->setNotes("This is a default branch, created automatically on mod creation.");
             $defaultBranch->setIsDefault(true);
-            
+
             $meta->addBranch($defaultBranch);
             $meta->addUser($this->getUser());
 
-            $em = $this->getDoctrine()
-                ->getManager();
-                     
+            $em = $this->getDoctrine()->getManager();
+
             $em->persist($meta);
             $em->persist($defaultBranch);
 
@@ -173,7 +173,7 @@ class MetaController extends Controller
                   ->getFlashBag()
                   ->add('success', 'New mod <strong>"'.$meta->getTitle().'" (id: '.$meta->getMetaId().')</strong> successfully created.<br/><hr/>A default branch has been created for this mod : <strong>"'.$defaultBranch->getName().'" (id: '.$defaultBranch->getBranchId().')</strong>.');
             */
-            
+
             // TODO: Maybe this should be moved into a method of Meta?
             // création de l'ACL
             $aclProvider = $this->get('security.acl.provider');
@@ -192,18 +192,18 @@ class MetaController extends Controller
             $acl->insertObjectAce($securityIdentity, MaskBuilder::MASK_OPERATOR);
 
             $aclProvider->updateAcl($acl);
-            
+
             return $this->redirect($this->generateUrl('hlp_nebula_repository_branch', array(
                 'meta'    => $meta,
                 'branch'  => $defaultBranch
             )));
         }
-        
+
         return $this->render('HLPNebulaBundle:Meta:create.html.twig', array(
             'form'  => $form->createView()
         ));
     }
-    
+
     /**
      * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
      * @Security("is_granted('EDIT', meta)")
@@ -244,13 +244,13 @@ class MetaController extends Controller
             'referURL' => $referURL
         ));
     }
-  
+
     /**
      * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
      * @Security("is_granted('DELETE', meta)")
      */
     public function deleteAction(Request $request, Meta $meta)
-    {  
+    {
         $session = new Session();
         $referURL = $session->get('meta_refer');
 
@@ -259,7 +259,7 @@ class MetaController extends Controller
         if ($form->handleRequest($request)->isValid()) {
             $em = $this->getDoctrine()
                 ->getManager();
-               
+
             $em->remove($meta);
             $em->flush();
 

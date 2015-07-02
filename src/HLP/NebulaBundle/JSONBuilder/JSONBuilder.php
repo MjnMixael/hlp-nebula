@@ -22,20 +22,34 @@ distributed on an "AS IS" basis,
 express or implied.
 * See the Licence for the specific language governing
 permissions and limitations under the Licence.
-*/ 
+*/
 
 // src/HLP/NebulaBundle/JSONBuilder/JSONBuilder.php
 
 namespace HLP\NebulaBundle\JSONBuilder;
-use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerAware;
+use Symfony\Component\Filesystem\Filesystem;
+use Doctrine\ORM\Event\PostFlushEventArgs;
 
-class JSONBuilder
+use HLP\NebulaBundle\Entity\Build;
+use HLP\NebulaBundle\Entity\Branch;
+
+class JSONBuilder extends ContainerAware
 {
+    protected static $changedPrivateBranches = array();
+    protected static $publicBranchChanged = false;
+
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+    }
+
     /**
     * @param object $build
     * @return array
     */
-    public function createFromBuild(\HLP\NebulaBundle\Entity\Build $build, $finalise = true)
+    public function createFromBuild(Build $build, $finalise = true)
     {
         $branch = $build->getBranch();
         $meta = $branch->getMeta();
@@ -51,7 +65,7 @@ class JSONBuilder
         }
 
         if(($logo = $meta->getLogo())) {
-            $host = sprintf('http%s://%s/',
+            $host = sprintf('http%s://%s',
                 isset($_SERVER['HTTPS']) ? 's' : '',
                 isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost'
             );
@@ -74,7 +88,7 @@ class JSONBuilder
                     'name'   => $package->getName(),
                     'status' => $package->getStatus()
                 );
-                
+
                 if($package->getNotes()) {
                     $pkg['notes'] = $package->getNotes();
                 }
@@ -167,5 +181,103 @@ class JSONBuilder
         {
             return $data;
         }
+    }
+
+    protected function _rebuildRepo($path, $branch_collection)
+    {
+        $lock = $path . '.lock';
+        if (file_exists($lock)) {
+            // Abort!
+            return;
+        }
+
+        file_put_contents($lock, '');
+
+        $data = '';
+        foreach ($branch_collection as $branch) {
+            foreach($branch->getBuilds() as $build) {
+                $bd = $build->getGeneratedJSON();
+                $start = strpos($bd, '"mods":[') + 8;
+                $end = strrpos($bd, ']');
+                $data .= ',' . substr($bd, $start, $end - $start);
+            }
+        }
+
+        file_put_contents($path, '{"mods":[' . substr($data, 1) . ']}');
+        unlink($lock);
+    }
+
+    protected function _privateRepoPath($branch)
+    {
+        $path = realpath($this->container->getParameter('web_path') . '/privrepo') . '/';
+        $sub_path = $branch->getMeta()->getMetaId() . '/' . $branch->getBranchId();
+        $sub_path .= '_' . $branch->getPrivateKey() . '.json';
+
+        // Paranoid path check.
+        $fs = new Filesystem();
+        $full_path = $path . $sub_path;
+        $rel_path = rtrim($fs->makePathRelative($full_path, $path), '/');
+
+        if ($rel_path != $sub_path || strpos($rel_path, '../') !== false) {
+            var_dump([$path, $full_path, $rel_path]);
+            throw new AccessDeniedException('Weird paths!');
+        }
+
+        return $full_path;
+    }
+
+    public function rebuildPublicRepo()
+    {
+        $branches = $this->container->get('doctrine')->getManager()
+            ->getRepository('HLPNebulaBundle:Branch')->getDefaultBranches();
+        $path = $this->container->getParameter('web_path') . '/repo/public.json';
+
+        $this->_rebuildRepo($path, $branches);
+    }
+
+    public function rebuildPrivateRepo($branch)
+    {
+
+        $path = $this->_privateRepoPath($branch);
+        $fs = new Filesystem();
+
+        $fs->mkdir(dirname($path));
+        $this->_rebuildRepo($path, array($branch));
+    }
+
+    public function markBranchAsChanged($branch)
+    {
+        if ($branch->isPublic()) {
+            if ($branch->getIsDefault()) {
+                self::$publicBranchChanged = true;
+            }
+        } else if (!in_array($branch, self::$changedPrivateBranches)) {
+            self::$changedPrivateBranches[] = $branch;
+        }
+    }
+
+    public function removeBranch($branch)
+    {
+        if (!$branch->isPublic()) {
+            $path = $this->_privateRepoPath($branch);
+
+            if (file_exists($path)) {
+                unlink($path);
+            }
+        }
+    }
+
+    public function postFlush(PostFlushEventArgs $args)
+    {
+        foreach (self::$changedPrivateBranches as $branch) {
+            $this->rebuildPrivateRepo($branch);
+        }
+
+        if (self::$publicBranchChanged) {
+            $this->rebuildPublicRepo();
+        }
+
+        self::$changedPrivateBranches = array();
+        self::$publicBranchChanged = false;
     }
 }

@@ -22,7 +22,7 @@ distributed on an "AS IS" basis,
 express or implied.
 * See the Licence for the specific language governing
 permissions and limitations under the Licence.
-*/ 
+*/
 
 namespace HLP\NebulaBundle\Entity;
 
@@ -47,25 +47,25 @@ class Build
      * @Assert\Valid
      */
     private $packages;
-    
+
     /**
      * @ORM\OneToMany(targetEntity="HLP\NebulaBundle\Entity\Action", mappedBy="build", cascade={"persist", "remove"})
      * @Assert\Valid
      */
     private $actions;
-    
+
     /**
      * @ORM\ManyToOne(targetEntity="HLP\NebulaBundle\Entity\Meta", inversedBy="builds")
      * @ORM\JoinColumn(nullable=false)
      */
     private $meta;
-    
+
     /**
      * @ORM\ManyToOne(targetEntity="HLP\NebulaBundle\Entity\Branch", inversedBy="builds")
      * @ORM\JoinColumn(nullable=false)
      */
     private $branch;
-    
+
     /**
      * @var integer
      *
@@ -74,14 +74,14 @@ class Build
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
-    
+
     /**
      * @var string
      *
      * @ORM\Column(name="version", type="string", length=255)
      */
     private $version;
-    
+
     /**
      * @var integer
      *
@@ -160,14 +160,14 @@ class Build
      * @ORM\Column(name="generated_JSON", type="text", nullable=true)
      */
     private $generatedJSON;
-    
+
     /**
      * @var string
      *
      * @ORM\Column(name="converterToken", type="string", length=255, nullable=true)
      */
     private $converterToken;
-    
+
     /**
      * @var string
      *
@@ -183,7 +183,7 @@ class Build
     private $notes;
 
     private $semver_pattern;
-    
+
     /**
      * @var string
      *
@@ -204,13 +204,13 @@ class Build
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
         return $this->id;
     }
-    
+
     /**
      * Set versionMajor
      *
@@ -227,7 +227,7 @@ class Build
     /**
      * Get versionMajor
      *
-     * @return integer 
+     * @return integer
      */
     public function getVersionMajor()
     {
@@ -250,7 +250,7 @@ class Build
     /**
      * Get versionMinor
      *
-     * @return integer 
+     * @return integer
      */
     public function getVersionMinor()
     {
@@ -273,7 +273,7 @@ class Build
     /**
      * Get versionPatch
      *
-     * @return integer 
+     * @return integer
      */
     public function getVersionPatch()
     {
@@ -296,7 +296,7 @@ class Build
     /**
      * Get versionPreRelease
      *
-     * @return string 
+     * @return string
      */
     public function getVersionPreRelease()
     {
@@ -319,7 +319,7 @@ class Build
     /**
      * Get versionMetadata
      *
-     * @return string 
+     * @return string
      */
     public function getVersionMetadata()
     {
@@ -342,7 +342,7 @@ class Build
     /**
      * Get updated
      *
-     * @return \DateTime 
+     * @return \DateTime
      */
     public function getUpdated()
     {
@@ -365,7 +365,7 @@ class Build
     /**
      * Get state
      *
-     * @return integer 
+     * @return integer
      */
     public function getState()
     {
@@ -388,7 +388,7 @@ class Build
     /**
      * Get notes
      *
-     * @return string 
+     * @return string
      */
     public function getNotes()
     {
@@ -411,7 +411,7 @@ class Build
     /**
      * Get branch
      *
-     * @return \HLP\NebulaBundle\Entity\Branch 
+     * @return \HLP\NebulaBundle\Entity\Branch
      */
     public function getBranch()
     {
@@ -434,7 +434,7 @@ class Build
     /**
      * Get branchId
      *
-     * @return string 
+     * @return string
      */
     public function getBranchId()
     {
@@ -457,7 +457,7 @@ class Build
     /**
      * Get folder
      *
-     * @return string 
+     * @return string
      */
     public function getFolder()
     {
@@ -471,16 +471,16 @@ class Build
         $this->isReady = false;
         $this->isFailed = false;
         $this->updated = new \Datetime;
-        
+
         $this->packages = new \Doctrine\Common\Collections\ArrayCollection();
         $this->actions = new \Doctrine\Common\Collections\ArrayCollection();
     }
-    
+
     public function __toString()
     {
       return $this->getVersion();
     }
-    
+
     public function __clone()
     {
          if ($this->id) {
@@ -491,7 +491,7 @@ class Build
             $this->converterToken = null;
             $this->converterTicket = null;
             $this->updated = new \Datetime;
-            
+
             $newPackages = new \Doctrine\Common\Collections\ArrayCollection();
             foreach($this->packages as $package) {
               $newPackage = clone $package;
@@ -499,7 +499,7 @@ class Build
               $newPackage->setBuild($this);
             }
             $this->packages = $newPackages;
-            
+
             $newActions = new \Doctrine\Common\Collections\ArrayCollection();
             foreach($this->actions as $action) {
               $newAction = clone $action;
@@ -536,7 +536,7 @@ class Build
     /**
      * Get packages
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getPackages()
     {
@@ -569,24 +569,24 @@ class Build
     /**
      * Get actions
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getActions()
     {
         return $this->actions;
     }
-    
+
     /**
      * @Assert\Callback
      */
     public function packageNamesUnique(ExecutionContextInterface $context)
     {
       $packageNames = Array();
-      
+
       foreach ($this->packages as $key => $package) {
         $packageNames[$key] = $package->getName();
       }
-      
+
       if(count($packageNames) !== count(array_unique($packageNames))) {
         $context->addViolationAt(
             'packages',
@@ -607,13 +607,16 @@ class Build
     {
         $this->generatedJSON = $generatedJSON;
 
+        // Update static repos
+        ContainerRef::get()->get('hlp_nebula.json_builder')->markBranchAsChanged($this->branch);
+
         return $this;
     }
 
     /**
      * Get generatedJSON
      *
-     * @return string 
+     * @return string
      */
     public function getGeneratedJSON()
     {
@@ -636,7 +639,7 @@ class Build
     /**
      * Get converterToken
      *
-     * @return string 
+     * @return string
      */
     public function getConverterToken()
     {
@@ -659,7 +662,7 @@ class Build
     /**
      * Get converterTicket
      *
-     * @return string 
+     * @return string
      */
     public function getConverterTicket()
     {
@@ -682,7 +685,7 @@ class Build
     /**
      * Get meta
      *
-     * @return \HLP\NebulaBundle\Entity\Meta 
+     * @return \HLP\NebulaBundle\Entity\Meta
      */
     public function getMeta()
     {
@@ -694,7 +697,7 @@ class Build
         if ($this->version == null) {
             $this->_combineVersion();
         }
-        
+
         return $this->version;
     }
 
@@ -709,8 +712,8 @@ class Build
         $this->versionMajor = intval($m[1]);
         $this->versionMinor = intval($m[2]);
         $this->versionPatch = intval($m[3]);
-        $this->versionPreRelease = (isset($m[4]) ? $m[4] : null);
-        $this->versionMetadata = (isset($m[5]) ? $m[5] : null);
+        $this->versionPreRelease = (!empty($m[4]) ? $m[4] : null);
+        $this->versionMetadata = (!empty($m[5]) ? $m[5] : null);
 
         $this->version = null;
         $this->_combineVersion();
@@ -722,10 +725,10 @@ class Build
     {
         $this->semver_pattern = $pattern;
     }
-    
+
     /**
      * Set version
-     * 
+     *
      * @return Build
      *
      * @ORM\PrePersist
@@ -734,12 +737,12 @@ class Build
     {
         if ($this->version == null) {
             $this->version = $this->versionMajor.'.'.$this->versionMinor.'.'.$this->versionPatch;
-            
+
             if(isset($this->versionPreRelease))
             {
                 $this->version .= '-'.$this->versionPreRelease;
             }
-            
+
             if(isset($this->versionMetadata))
             {
                 $this->version .= '+'.$this->versionMetadata;
@@ -747,5 +750,17 @@ class Build
         }
 
         return $this;
+    }
+
+    /**
+     * Update static json repos.
+     *
+     * @ORM\PostRemove
+     */
+    public function _updateRepos()
+    {
+        if ($this->generatedJSON) {
+            ContainerRef::get()->get('hlp_nebula.json_builder')->markBranchAsChanged($this->branch);
+        }
     }
 }
