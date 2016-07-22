@@ -10,7 +10,7 @@
     {# TODO: Check if we actually have builds where state == DONE. #}
     <p class="text-danger">&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-warning-sign"></span>&nbsp;This mod has no available build.</p>
   {% endif %}
-  <input class="form-control" type="text" value="{{ url('hlp_nebula_fs2mod', {'path': meta.metaId}) }}" readonly>
+  <input class="form-control" type="text" value="{{ url('hlp_nebula_fs2mod_repo', {'meta': meta.metaId, 'branch': 'master', 'build': 'current'}) }}" readonly>
   <br>
 
   <h5><span class="glyphicon glyphicon-paperclip"></span> Mod metadata</h5>

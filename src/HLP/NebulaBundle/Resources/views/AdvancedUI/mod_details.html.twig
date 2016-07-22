@@ -4,7 +4,7 @@
 <h5><span class="glyphicon glyphicon-link"></span> Unique mod URL (redirects to the latest build in the default branch)</h5>
 {% if mod.nbBranches == 0 %}<p class="text-danger">&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-warning-sign"></span>&nbsp;This mod has no available branche.</p>{% endif %}
 {% if mod.nbBuilds == 0 %}<p class="text-danger">&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-warning-sign"></span>&nbsp;This mod has no available build.</p>{% endif %}
-<input class="form-control" type="text" value="{{ url('hlp_nebula_fs2mod', {'owner': owner.nameCanonical, 'mod': mod.modId, 'branch': 'default', 'build': 'current'}) }}.json" readonly>
+<input class="form-control" type="text" value="{{ url('hlp_nebula_fs2mod_repo', {'meta': meta.metaId, 'branch': 'default', 'build': 'current'}) }}.json" readonly>
 <br/>
 <h5><span class="glyphicon glyphicon-paperclip"></span> Mod metadata</h5>
 <div class="well">

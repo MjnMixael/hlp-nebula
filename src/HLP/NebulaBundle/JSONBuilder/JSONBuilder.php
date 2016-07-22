@@ -144,7 +144,7 @@ class JSONBuilder extends ContainerAware
                         );
 
                         if($file->getDest()) {
-                            $f['dest'] = $file->getDest();
+                            $f['dest'] = (string) $file->getDest();
                         }
 
                         $pkg['files'][] = $f;
