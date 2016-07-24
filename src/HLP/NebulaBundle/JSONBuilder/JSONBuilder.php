@@ -198,10 +198,14 @@ class JSONBuilder
         $data = '';
         foreach ($branch_collection as $branch) {
             foreach($branch->getBuilds() as $build) {
+                if($build->getState() != Build::DONE) continue;
+
                 $bd = $build->getGeneratedJSON();
                 $start = strpos($bd, '"mods":[') + 8;
                 $end = strrpos($bd, ']');
-                $data .= ',' . substr($bd, $start, $end - $start);
+                if($end > $start) {
+                    $data .= ',' . substr($bd, $start, $end - $start);
+                }
             }
         }
 

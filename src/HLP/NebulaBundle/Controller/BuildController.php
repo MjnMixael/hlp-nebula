@@ -292,6 +292,7 @@ class BuildController extends Controller
         }
 
         $newBuild = clone $build;
+        $newBuild->setState(Build::WAITING);
         $form = $this->createForm(new BuildType(), $newBuild);
         $form->handleRequest($request);
 
@@ -567,7 +568,7 @@ class BuildController extends Controller
             $request->getSession()->getFlashBag()
                 ->add('success', "Build <strong>version ".$build->getVersion()."</strong> has been deleted.");
 
-            return $this->redirect($this->generateUrl('hlp_nebula_branch', array(
+            return $this->redirect($this->generateUrl('hlp_nebula_repository_branch', array(
                 'meta'   => $meta,
                 'branch' => $branch
             )));
