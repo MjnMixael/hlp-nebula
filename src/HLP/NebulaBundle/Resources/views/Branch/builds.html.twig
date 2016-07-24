@@ -32,6 +32,8 @@
                 <span class="text-warning"><span class="glyphicon glyphicon-remove"></span> Failed</span>
               {% elseif build.state == constant('PROCESSING', build) %}
                 <span class="text-info"><span class="glyphicon glyphicon-cog"></span> Processing...</span>
+              {% elseif build.state == constant('WAITING', build) %}
+                <span class="text-info"><span class="glyphicon glyphicon-time"></span> Waiting</span>
               {% else %}
                 <span class="text-danger">INVALID STATE!</span>
               {% endif %}

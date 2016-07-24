@@ -38,7 +38,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Executable
 {
     /**
-     * @ORM\ManyToOne(targetEntity="HLP\NebulaBundle\Entity\Package", inversedBy="files")
+     * @ORM\ManyToOne(targetEntity="HLP\NebulaBundle\Entity\Package", inversedBy="executables")
      * @ORM\JoinColumn(nullable=false)
      */
     private $package;

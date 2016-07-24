@@ -187,10 +187,6 @@ class MetaController extends Controller
             $securityIdentity = UserSecurityIdentity::fromAccount($user);
             $acl->insertObjectAce($securityIdentity, MaskBuilder::MASK_OWNER);
 
-
-            $securityIdentity = new RoleSecurityIdentity('ROLE_ADMIN');
-            $acl->insertObjectAce($securityIdentity, MaskBuilder::MASK_OPERATOR);
-
             $aclProvider->updateAcl($acl);
 
             return $this->redirect($this->generateUrl('hlp_nebula_repository_branch', array(

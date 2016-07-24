@@ -2,15 +2,18 @@
 
 hlp_catalogue_catalogue_home:
     path:     /
-    defaults: { _controller: HLPNebulaBundle:Catalogue:index }
+    defaults:
+        _controller: FrameworkBundle:Redirect:redirect
+        route: hlp_nebula_workshop_home
+        permanent: true
 
-hlp_catalogue_catalogue_highlights:
-    path:     /highlights
-    defaults: { _controller: HLPNebulaBundle:Catalogue:index }
+# hlp_catalogue_catalogue_highlights:
+#     path:     /highlights
+#     defaults: { _controller: HLPNebulaBundle:Catalogue:index }
 
-hlp_catalogue_catalogue_mods:
-    path:     /mods
-    defaults: { _controller: HLPNebulaBundle:Catalogue:mods }
+# hlp_catalogue_catalogue_mods:
+#     path:     /mods
+#     defaults: { _controller: HLPNebulaBundle:Catalogue:mods }
 
 # Base Nebula (owners part) routes
 

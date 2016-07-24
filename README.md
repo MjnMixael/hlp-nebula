@@ -28,6 +28,7 @@ sudo apt-get install apache2 php5 mysql-server libapache2-mod-php5 php5-mysql ph
    ```bash
    composer install
    ```
+
 7. Give the web server write access to ```app/cache```, ```app/logs``` and ```web/uploads```:
    ```bash
    sudo chown www-data -R app/cache app/logs web/uploads

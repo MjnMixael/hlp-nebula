@@ -12,6 +12,13 @@
         <div class="alert alert-danger">
             This build failed! This means that the downloads might be damaged or something else is wrong with this release.
         </div>
+    {% elseif build.state == constant('WAITING', build) %}
+        <div class="alert alert-info">
+            This build is ready to be processed.
+            <a href="{{ path('hlp_nebula_process', { meta: meta.metaId, branch: branch.branchId, build: build.version }) }}">
+                Click here to start the process{#
+            #}</a>.
+        </div>
     {% elseif build.state != constant('DONE', build) %}
         <div class="alert alert-warning">
             I have no idea what's going on with this build... ???

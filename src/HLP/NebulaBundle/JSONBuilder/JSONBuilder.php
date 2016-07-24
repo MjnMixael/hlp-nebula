@@ -28,15 +28,17 @@ permissions and limitations under the Licence.
 
 namespace HLP\NebulaBundle\JSONBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\ContainerAware;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\Filesystem\Filesystem;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 
 use HLP\NebulaBundle\Entity\Build;
 use HLP\NebulaBundle\Entity\Branch;
 
-class JSONBuilder extends ContainerAware
+class JSONBuilder
 {
+    use ContainerAwareTrait;
+
     protected static $changedPrivateBranches = array();
     protected static $publicBranchChanged = false;
 
