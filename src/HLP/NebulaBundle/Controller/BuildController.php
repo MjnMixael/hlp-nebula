@@ -90,9 +90,10 @@ class BuildController extends Controller
         }
 
         return $this->render('HLPNebulaBundle:Build:create.html.twig', array(
-            'meta'   => $branch->getMeta(),
-            'branch' => $branch,
-            'form'   => $form->createView()
+            'meta'       => $branch->getMeta(),
+            'branch'     => $branch,
+            'form'       => $form->createView(),
+            'upload_url' => $this->container->get('hlpnebula.knossos')->getUploadURL()
         ));
     }
 
@@ -102,7 +103,7 @@ class BuildController extends Controller
      */
     public function editAction(Request $request, Build $build)
     {
-        if ($build->getState() != Build::FAILED) {
+        if (!in_array($build->getState(), [Build::FAILED, Build::WAITING])) {
             $request->getSession()->getFlashBag()
                 ->add('error', 'You can only edit failed builds!');
 
@@ -134,9 +135,10 @@ class BuildController extends Controller
         }
 
         return $this->render('HLPNebulaBundle:Build:create.html.twig', array(
-            'meta'   => $build->getMeta(),
-            'branch' => $build->getBranch(),
-            'form'   => $form->createView()
+            'meta'       => $build->getMeta(),
+            'branch'     => $build->getBranch(),
+            'form'       => $form->createView(),
+            'upload_url' => $this->container->get('hlpnebula.knossos')->getUploadURL()
         ));
     }
 
@@ -165,27 +167,31 @@ class BuildController extends Controller
      */
     public function showFilesAction(Build $build)
     {
-        $build_data = json_decode($build->getGeneratedJSON())->mods[0];
-
         $packages = array();
         $archives = array();
-        foreach ($build_data->packages as $pkg) {
-            $files = array();
 
-            foreach ($pkg->files as $file) {
-                if ($file->is_archive) {
-                    $archives[$pkg->name . '/' . $file->filename] = $file;
+        $build_data = json_decode($build->getGeneratedJSON());
+        if($build_data) {
+            $build_data = $build_data->mods[0];
+        
+            foreach ($build_data->packages as $pkg) {
+                $files = array();
+
+                foreach ($pkg->files as $file) {
+                    if ($file->is_archive) {
+                        $archives[$pkg->name . '/' . $file->filename] = $file;
+                    }
                 }
+
+                foreach ($pkg->filelist as $file) {
+                    $files[$file->filename] = $file;
+                }
+
+                ksort($files);
+                $pkg->filelist = $files;
+
+                $packages[$pkg->name] = $pkg;
             }
-
-            foreach ($pkg->filelist as $file) {
-                $files[$file->filename] = $file;
-            }
-
-            ksort($files);
-            $pkg->filelist = $files;
-
-            $packages[$pkg->name] = $pkg;
         }
 
         ksort($packages);

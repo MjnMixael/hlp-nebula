@@ -50,7 +50,10 @@
                     <span class="glyphicon glyphicon-transfer"></span> Transfer
                   </a>
                 {% endif %}
-                {% if build.state != constant('WAITING', build) %}
+                {% if build.state != constant('DONE', build) and build.state != constant('PROCESSING', build) %}
+                  <a href="{{ path('hlp_nebula_repository_build_edit', params) }}" class="btn btn-default btn-xs">
+                    <span class="glyphicon glyphicon-pencil"></span> Edit
+                  </a>
                   <a href="{{ path('hlp_nebula_reprocess', params) }}" class="btn btn-default btn-xs">
                     <span class="glyphicon glyphicon-cog"></span> Reprocess
                   </a>

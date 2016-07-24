@@ -20,5 +20,6 @@ parameters:
     web_path:               "%kernel.root_dir%/../web"
     
     hlp_nebula.knossos.server: s1-nebula.tproxy.de
-    hlp_nebula.knossos.apikey: ~
     hlp_nebula.knossos.secure: true
+    hlp_nebula.knossos.apinum: 0
+    hlp_nebula.knossos.apikey: ~

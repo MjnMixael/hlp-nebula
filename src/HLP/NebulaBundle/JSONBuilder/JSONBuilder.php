@@ -168,7 +168,7 @@ class JSONBuilder
                 );
 
                 if('move' == $action->getType()) {
-                    $act['dest'] = $action->getDest();
+                    $act['dest'] = (string) $action->getDest();
                 }
 
                 $data['actions'][] = $act;

@@ -31,5 +31,11 @@
 
 {% block javascripts %}
   {{ parent() }}
-  <script type="text/javascript">init_build_form();</script>
+  {% javascripts
+    'bundles/hlpnebula/js/moxie.min.js'
+    'bundles/hlpnebula/js/plupload.min.js'
+    %}
+    <script src="{{ asset_url }}"></script>
+  {% endjavascripts %}
+  <script type="text/javascript">init_build_form({{ path('hlp_nebula_ajax_ticket')|json_encode|raw }}, {{ upload_url|json_encode|raw }});</script>
 {% endblock %}

@@ -47,6 +47,11 @@ hlp_nebula_ajax_packages:
     path:     /ajax/{mod}/search_packages
     defaults: { _controller: HLPNebulaBundle:AJAX:searchPackagesInMeta }
 
+# AJAX routes
+hlp_nebula_ajax_ticket:
+    path:     /ajax/t
+    defaults: { _controller: HLPNebulaBundle:AJAX:generateTicket }
+
 # Nebula user public data routes
 
 hlp_nebula_user_profile:
@@ -183,8 +188,6 @@ hlp_nebula_repository_build:
         _controller: FrameworkBundle:Redirect:redirect
         route: hlp_nebula_repository_build_details
         permanent: true
-
-
 
 
 hlp_nebula_new_build:

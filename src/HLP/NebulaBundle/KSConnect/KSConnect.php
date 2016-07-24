@@ -28,48 +28,45 @@ namespace HLP\NebulaBundle\KSConnect;
 
 class KSConnect
 {
-    protected $sendURL;
-    protected $retrieveURL;
-    protected $scriptURL;
-    protected $wsURL;
-    protected $APIkey;
-    protected $ksconn;
+    protected $url_base;
+    protected $ws_url;
+    protected $api_num;
+    protected $api_key;
+    protected $ksconn = null;
 
-    public function __construct($server, $APIkey, $secure)
+    public function __construct($server, $secure, $api_num, $api_key)
     {
         if ($secure) {
-            $urlBase = 'https://' . $server;
-            $wsBase = 'wss://' . $server;
+            $this->url_base = 'https://' . $server;
+            $this->ws_url = 'wss://' . $server;
         } else {
-            $urlBase = 'http://' . $server;
-            $wsBase = 'ws://' . $server;
+            $this->url_base = 'http://' . $server;
+            $this->ws_url = 'ws://' . $server;
         }
 
-        $this->apiURL = $urlBase . '/api/converter';
-        $this->scriptURL = $urlBase . '/static/converter.js';
-        $this->wsURL = $wsBase;
-
-        $this->APIkey = $APIkey;
-
-        $this->ksconn = curl_init();
-        curl_setopt($this->ksconn, CURLOPT_FAILONERROR, true);
-        curl_setopt($this->ksconn, CURLOPT_RETURNTRANSFER, true);
+        $this->api_num = $api_num;
+        $this->api_key = $api_key;
     }
 
     public function getScriptURL()
     {
-        return $this->scriptURL;
+        return $this->url_base . '/static/converter.js';
+    }
+
+    public function getUploadURL()
+    {
+        return $this->url_base . '/drop';
     }
 
     public function getWsURL()
     {
-        return $this->wsURL;
+        return $this->ws_url;
     }
 
     public function requestConversion($data, $webhook)
     {
         return $this->_callApi('request', array(
-            'passwd'  => $this->APIkey, 
+            'passwd'  => $this->api_key, 
             'data'    => $data,
             'webhook' => $webhook
         ));
@@ -83,9 +80,23 @@ class KSConnect
         ));
     }
 
+    public function generateToken()
+    {
+        $time = time() + 10;
+        $hash = hash('sha256', $this->api_key . $time);
+
+        return $time . '/' . urlencode($hash) . '/' . $this->api_num;
+    }
+
     protected function _callApi($method, $fields)
     {
-        curl_setopt($this->ksconn, CURLOPT_URL, $this->apiURL . '/' . $method);
+        if(is_null($this->ksconn)) {
+            $this->ksconn = curl_init();
+            curl_setopt($this->ksconn, CURLOPT_FAILONERROR, true);
+            curl_setopt($this->ksconn, CURLOPT_RETURNTRANSFER, true);
+        }
+
+        curl_setopt($this->ksconn, CURLOPT_URL, $this->url_base . '/api/converter/' . $method);
         curl_setopt($this->ksconn, CURLOPT_POST, count($fields));
         curl_setopt($this->ksconn, CURLOPT_POSTFIELDS, http_build_query($fields));
 
@@ -94,6 +105,6 @@ class KSConnect
 
     public function __destruct()
     {
-        curl_close($this->ksconn);
+        if(!is_null($this->ksconn)) curl_close($this->ksconn);
     }
 }

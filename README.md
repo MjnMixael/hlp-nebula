@@ -36,7 +36,7 @@ sudo apt-get install apache2 php5 mysql-server libapache2-mod-php5 php5-mysql ph
 
 8. Fill the database with the necessary tables:
    ```bash
-   php app/console doctrine:schema:create --force
+   php app/console doctrine:schema:create
    ```
 
 Now you can access the Nebula through the ```web/app.php``` file.

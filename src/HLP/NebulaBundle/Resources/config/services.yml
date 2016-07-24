@@ -7,4 +7,4 @@ services:
 
     hlp_nebula.knossos:
         class: HLP\NebulaBundle\KSConnect\KSConnect
-        arguments: ['%hlp_nebula.knossos.server%', '%hlp_nebula.knossos.apikey%', '%hlp_nebula.knossos.secure%']
+        arguments: ['%hlp_nebula.knossos.server%', '%hlp_nebula.knossos.secure%', '%hlp_nebula.knossos.apinum%', '%hlp_nebula.knossos.apikey%']

@@ -30,6 +30,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AJAXController extends Controller
@@ -90,5 +91,18 @@ class AJAXController extends Controller
     {
       return $this->redirect('/');
     }
+  }
+
+  /**
+   * Generate a ticket for direct communication with the Knossos server
+   * 
+   * @Security("has_role('ROLE_USER')")
+   */
+  public function generateTicketAction(Request $request)
+  {
+    $response = new Response($this->container->get('hlpnebula.knossos')->generateToken());
+    $response->headers->set('Content-Type', 'text/plain');
+
+    return $response;
   }
 }
