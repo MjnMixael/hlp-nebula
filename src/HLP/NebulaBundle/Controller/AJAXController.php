@@ -35,7 +35,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AJAXController extends Controller
 {
-  public function searchModsAction(Request $request)
+  public function searchMetasAction(Request $request)
   {
     if($request->isXmlHttpRequest())
     {
@@ -47,9 +47,9 @@ class AJAXController extends Controller
         $metas = $this->getDoctrine()->getManager()
           ->getRepository('HLPNebulaBundle:Meta')->searchMetas($term);
 
-        foreach($mods as $mod)
+        foreach($metas as $meta)
         {
-          $data[] = $mod->getModId();
+          $data[] = $meta->getMetaId();
         }
       }
       
@@ -65,7 +65,7 @@ class AJAXController extends Controller
     }
   }
   
-  public function searchPackagesInModAction(Request $request, $meta)
+  public function searchPackagesInMetaAction(Request $request, $meta)
   {
     if($request->isXmlHttpRequest())
     {

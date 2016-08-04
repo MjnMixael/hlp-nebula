@@ -42,9 +42,9 @@ class PackageRepository extends EntityRepository
             ->leftJoin('p.build', 'u')
             ->leftJoin('u.branch', 'b')
             ->leftJoin('b.mod', 'm')
-            ->where('m.modId = :modId')
+            ->where('m.metaId = :metaId')
             ->orderBy('p.name', 'ASC')
-            ->setParameter('modId', $metaId);
+            ->setParameter('metaId', $metaId);
         
         if(!empty($term))
         {

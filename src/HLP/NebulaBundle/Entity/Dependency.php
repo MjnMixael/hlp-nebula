@@ -79,7 +79,6 @@ class Dependency
      * @var string
      *
      * @ORM\Column(name="version", type="string", length=255)
-     * @Assert\NotBlank()
      * @Assert\Length(max=255)
      */
     private $version;
@@ -149,6 +148,7 @@ class Dependency
      */
     public function setVersion($version)
     {
+        if(empty($version)) $version = '*';
         $this->version = $version;
 
         return $this;

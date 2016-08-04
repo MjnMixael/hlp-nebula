@@ -57,8 +57,8 @@ class MetaRepository extends EntityRepository
     public function searchMetas($term)
     {
         $qb = $this->createQueryBuilder('m')
-            ->where('m.modId LIKE :keyword')
-            ->orderBy('m.modId', 'ASC')
+            ->where('m.metaId LIKE :keyword')
+            ->orderBy('m.metaId', 'ASC')
             ->setParameter('keyword', '%'.$term.'%');
 
         return $qb->getQuery()->getResult();
