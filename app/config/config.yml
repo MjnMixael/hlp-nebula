@@ -66,11 +66,13 @@ doctrine:
 
 # Swiftmailer Configuration
 swiftmailer:
-    transport: "%mailer_transport%"
-    host:      "%mailer_host%"
-    username:  "%mailer_user%"
-    password:  "%mailer_password%"
-    spool:     { type: memory }
+    transport:  "%mailer_transport%"
+    host:       "%mailer_host%"
+    port:       "%mailer_port%"
+    encryption: "%mailer_encryption%"
+    username:   "%mailer_user%"
+    password:   "%mailer_password%"
+    spool:      { type: memory }
     
 # FoSUB Configuration
 
@@ -82,7 +84,7 @@ fos_user:
         confirmation:
             enabled:    true
     from_email:
-        address:        noreply@fsnebula.org
+        address:        "%mailer_sender%"
         sender_name:    Nebula
 
 hlp_nebula:
