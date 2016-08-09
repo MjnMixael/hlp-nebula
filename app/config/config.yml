@@ -33,7 +33,7 @@ twig:
 assetic:
     debug:          "%kernel.debug%"
     use_controller: false
-    bundles:        ["HLPNebulaBundle"]
+    bundles:        ["HLPNebulaBundle", "FOSUserBundle"]
     #java: /usr/bin/java
     write_to:       "%web_path%"
     filters:

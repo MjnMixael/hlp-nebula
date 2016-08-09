@@ -1,0 +1,30 @@
+{% extends "HLPNebulaBundle::layout.html.twig" %}
+{% form_theme form 'HLPNebulaBundle:AdvancedUI:form_theme.html.twig' %}
+{% trans_default_domain 'FOSUserBundle' %}
+
+{% block title %}
+    Edit profile
+{% endblock title %}
+
+{% block body %}
+    {% for key, messages in app.session.flashbag.all() %}
+        {% for message in messages %}
+            <div class="alert alert-info">
+                {{ message|trans({}, 'FOSUserBundle') }}
+            </div>
+
+        {% endfor %}
+    {% endfor %}
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            {{ form_start(form, { 'action': path('fos_user_profile_edit'), 'attr': { 'class': 'fos_user_profile_edit' } }) }}
+                {{ form_widget(form) }}
+                
+                <div>
+                    <input type="submit" class="btn btn-primary" value="{{ 'profile.edit.submit'|trans }}" />
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

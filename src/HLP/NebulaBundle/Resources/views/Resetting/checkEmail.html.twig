@@ -1,0 +1,23 @@
+{% extends "HLPNebulaBundle::layout.html.twig" %}
+{% trans_default_domain 'FOSUserBundle' %}
+
+{% block title %}
+    Reset password
+{% endblock title %}
+
+{% block body %}
+    {% for key, messages in app.session.flashbag.all() %}
+        {% for message in messages %}
+            <div class="alert alert-info">
+                {{ message|trans({}, 'FOSUserBundle') }}
+            </div>
+
+        {% endfor %}
+    {% endfor %}
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            {{ 'resetting.check_email'|trans({'%email%': email}) }}
+        </div>
+    </div>
+{% endblock body %}
