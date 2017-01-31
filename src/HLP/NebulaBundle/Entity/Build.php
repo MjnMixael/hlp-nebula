@@ -37,7 +37,7 @@ use Ngld\CommonBundle\DependencyInjection\ContainerRef;
  *
  * @ORM\Table(name="hlp_nebula_build")
  * @ORM\Entity(repositoryClass="HLP\NebulaBundle\Entity\BuildRepository")
- * @UniqueEntity(fields={"branch", "versionMajor", "versionMinor", "versionPatch", "versionPreRelease", "versionMetadata"},  ignoreNull=false, message="Same version error (across a mod branch).")
+ * @UniqueEntity(fields={"branch", "versionMajor", "versionMinor", "versionPatch", "versionPreRelease", "versionMetadata"},  ignoreNull=false, message="Duplicate version, please delete the old version or choose a higher version number.")
  * @ORM\HasLifecycleCallbacks()
  */
 class Build

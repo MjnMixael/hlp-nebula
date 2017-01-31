@@ -52,8 +52,7 @@
             {% for name, title in {
               'start': 'Get started',
               'metas': 'Mods',
-              'users': 'Modders',
-              'activity': 'Activity'
+              'users': 'Modders'
             } %}
               <li class="{% if route == 'hlp_nebula_workshop_' ~ name %}active{% endif %}">
                 <a href="{{ path('hlp_nebula_workshop_' ~ name) }}">{{ title|e }}</a>
@@ -61,6 +60,11 @@
             {% endfor %}
           </ul>
           {% if is_granted("IS_AUTHENTICATED_REMEMBERED") %}
+            <a class="btn btn-success navbar-btn" href="{{ path('hlp_nebula_repository_meta_create') }}">
+              <i class="glyphicon glyphicon-plus"></i>
+              Upload new mod
+            </a>
+
             <p class="nav navbar-text navbar-right">
               Signed in as
               <a class="navbar-link" href="{{ path('hlp_nebula_user', {'user': app.user.usernameCanonical }) }}">

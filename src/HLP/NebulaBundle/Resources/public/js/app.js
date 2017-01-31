@@ -27,6 +27,7 @@
                 var bar = $('<div class="progress"><div class="progress-bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">Connecting...</div></div>');
                 up_bar = bar.find('.progress-bar');
                 up_button.after(bar);
+                up_button.parents('.well').find('.pkg-file-name').val(files[0].name);
 
                 uploader.disableBrowse(true);
                 $.get(ticket_point, function (ticket) {
@@ -58,10 +59,14 @@
                 } else if(res.url) {
                     var input = $this.find('.pkg-file-url input.uploaded');
                     if(input.length < 1) {
-                        $this.find('.pkg-file-url .addButton').click();
-
                         input = $this.find('.pkg-file-url input.form-control:last');
-                        input.addClass('uploaded')
+                        if(input.val() !== '') {
+                            $this.find('.pkg-file-url .addButton').click();
+
+                            input = $this.find('.pkg-file-url input.form-control:last');
+                        }
+
+                        input.addClass('uploaded');
                     }
 
                     input.val(res.url);
@@ -143,8 +148,6 @@
             var url = $(this).val();
             var name_field = $(this).parents('.well').find('input.pkg-file-name');
 
-            console.log([url, name_field])
-
             if(name_field.val() == '') {
                 name_field.val(url.split('/').pop());
             }
@@ -189,11 +192,17 @@
             var $this = $(e.target);
             var pkg_urls = $this.find('.pkg-file-url .addButton');
 
-            $this.find('.pkg-env-type').trigger('change')
+            $this.find('.pkg-env-type').trigger('change');
 
             if(pkg_urls.length > 0) {
                 init_uploader(ticket_point, upload_point, pkg_urls, $this);
             }
+        });
+
+        $(window).load(function () {
+            $('form .pkg-file-url').each(function (e) {
+                init_uploader(ticket_point, upload_point, $(this).find('.addButton'), $(this));
+            });
         });
 
         $('.pkg-env-type').trigger('change');

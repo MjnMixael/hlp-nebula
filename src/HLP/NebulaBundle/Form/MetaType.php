@@ -46,24 +46,8 @@ class MetaType extends AbstractType
                     'engine' => 'Engine'
                 )))
             ->add('metaId',         'text',      array('pattern' => '^[\\w]+[-\\w]*$'))
-            ->add('notes',          'textarea',   array('required' => false))
-            ->add('firstRelease',   'date',       array('years'  => range(1999, date('Y')),
-                                                        'format' => 'dd-MM-yyyy'))
             ->add('title',          'text')
             ->add('description',    'textarea',   array('required' => false))
-            ->add('features',       'collection', array('type'        => 'text',
-                                                    'allow_add'       => true,
-                                                    'allow_delete'    => true,
-                                                    'prototype'       => true,
-                                                    'prototype_name'  => '__features_prototype__'))
-            ->add('authors',        'collection', array(
-                    'type'            => new AuthorType(),
-                    'error_bubbling'  => false,
-                    'allow_add'       => true,
-                    'allow_delete'    => true,
-                    'prototype'       => true,
-                    'by_reference'    => false,
-                    'prototype_name'  => '__authors_prototype__'))
             ->add('keywords',       'text',       array('required' => false))
             ->add('categories', 'entity', array(
                     'class'    => 'HLPNebulaBundle:Category',

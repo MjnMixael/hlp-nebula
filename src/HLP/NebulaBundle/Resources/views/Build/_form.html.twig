@@ -34,7 +34,7 @@
     
     <div class="form-group">
         {{ form_label(form.folder, "Install folder") }}
-        <p class="help-block">This is the mod install path, relative to FreeSpace 2 install path. If not set, current default is : <strong>{{ meta.metaId }}/</strong>.</p>
+        <p class="help-block">This is the mod install path, relative to FreeSpace 2 install path. If not set, current default is : <strong>{{ meta.metaId }}</strong></p>
 
         {{ form_errors(form.folder) }}
         {{ form_widget(form.folder, {'attr':{'title': 'The install folder must be a valid path, relative to FreeSpace 2 install folder.' }}) }}

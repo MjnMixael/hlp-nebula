@@ -320,8 +320,8 @@ class BuildController extends Controller
         return $this->render('HLPNebulaBundle:Build:create.html.twig', array(
             'meta'   => $branch->getMeta(),
             'branch' => $branch,
-            // 'build'  => $build,
-            'form'   => $form->createView()
+            'form'   => $form->createView(),
+            'upload_url' => $this->container->get('hlpnebula.knossos')->getUploadURL()
         ));
     }
 
