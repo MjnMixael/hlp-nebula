@@ -26,7 +26,7 @@
     <div class="form-group">
         {% if form.metaId is defined %}
             {{ form_label(form.metaId, "Unique mod ID*") }}
-            <p class="help-block">This setting cannot be edited once the mod is published.</p>
+            <p class="help-block">It's recommended to use you mod's folder name here but please use only letters, numbers and underscores. This setting cannot be edited once the mod is published.</p>
 
             {{ form_errors(form.metaId) }}
             {{ form_widget(form.metaId, {'attr':{
@@ -46,11 +46,21 @@
     {% endif %}
 
     <div class="form-group">
+        {{ form_label(form.releaseThread, "Release Thread") }}
+        <p class="help-block">Put a link to the release thread on HLP here, if there is one.</p>
+
+        {{ form_errors(form.releaseThread) }}
+        {{ form_widget(form.releaseThread) }}
+    </div>
+
+    <div class="form-group">
         {{ form_label(form.description, "Description") }}
+        <p class="help-block">Tell us what this mod is about.</p>
+
         {{ form_errors(form.description) }}
         {{ form_widget(form.description) }}
     </div>
-    
+
     <br>
     <h4><span class="glyphicon glyphicon-tags"></span>&nbsp;&nbsp;Catalogue search</h4>
     <hr>
@@ -62,7 +72,7 @@
     
     <div class="form-group">
         {{ form_label(form.keywords, "Keywords") }}
-        <p class="help-block">Keywords will help the players finding your mod in the built-in search engine. Use a <em>comma (",") delimited list</em>.</p>
+        <p class="help-block">Keywords will help the players finding your mod once the built-in search engine is implemented. Use a <em>comma (",") delimited list</em>.</p>
         {{ form_errors(form.keywords) }}
         {{ form_widget(form.keywords) }}
     </div>

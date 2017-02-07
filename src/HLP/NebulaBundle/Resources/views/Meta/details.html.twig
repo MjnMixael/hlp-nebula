@@ -28,18 +28,6 @@
       <p class="col-xs-2 text-right"><strong>Description: </strong></p><p class="col-xs-10">{{ meta.description|nl2br }}</p>
     </div>
     <div class="row">
-      <p class="col-xs-2 text-right"><strong>Features: </strong></p>
-      <p class="col-xs-10">
-        {% if meta.features|length > 0 %}
-          <ul>
-            {% for feature in meta.features %}
-              <li>{{ feature }}</li>
-            {% endfor %}
-          </ul>
-        {% else %}N/A{% endif %}
-      </p>
-    </div>
-    <div class="row">
       <p class="col-xs-2 text-right"><strong>Authors: </strong></p>
       <p class="col-xs-10">
         {% if meta.authors|length > 0 %}

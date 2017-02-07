@@ -7,6 +7,14 @@
         {% endif %}
 
         <a href="fso://install/{{ meta.metaId }}" class="btn btn-success fso-install">Install</a>
+        {% if is_granted('EDIT', meta) %}
+            <a href="{{ path('hlp_nebula_repository_meta_update', {'meta': meta.metaId}) }}" class="btn btn-default">
+                <span class="glyphicon glyphicon-pencil"></span> Edit
+            </a>
+            <a href="{{ path('hlp_nebula_repository_build_create', {'meta': meta.metaId, 'branch': meta.defaultBranch}) }}" class="btn btn-success">
+                <span class="glyphicon glyphicon-plus"></span> New build
+            </a>
+        {% endif %}
     </div>
 
     {{ meta.description|nl2br }}

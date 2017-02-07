@@ -16,6 +16,11 @@
             <h2>{{ meta.title }}</h2>
             <hr>
             <p class="text-muted"><span class="glyphicon glyphicon-time"></span> First released on {{ meta.firstRelease|date("d M Y") }}</p>
+            {% if meta.releaseThread %}
+                <p class="text-muted">
+                    <span class="glyphicon glyphicon-link"></span> <a href="{{ meta.releaseThread }}">Release Thread</a>
+                </p>
+            {% endif %}
             <hr>
             <div class="row">
                 <div class="col-md-4 text-center">
@@ -43,8 +48,7 @@
                     'overview': 'Overview',
                     'branches': 'Branches',
                     'details': 'Mod details',
-                    'team': 'Team',
-                    'activity': 'Activity'
+                    'team': 'Team'
                 } %}
                     <li class="{{ route == 'hlp_nebula_repository_meta_' ~ key ? 'active' }}">
                         <a href="{{ path('hlp_nebula_repository_meta_' ~ key, {'meta': meta.metaId}) }}">

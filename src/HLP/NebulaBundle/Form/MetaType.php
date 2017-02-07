@@ -47,6 +47,7 @@ class MetaType extends AbstractType
                 )))
             ->add('metaId',         'text',      array('pattern' => '^[\\w]+[-\\w]*$'))
             ->add('title',          'text')
+            ->add('releaseThread', 'text',       array('required' => false))
             ->add('description',    'textarea',   array('required' => false))
             ->add('keywords',       'text',       array('required' => false))
             ->add('categories', 'entity', array(

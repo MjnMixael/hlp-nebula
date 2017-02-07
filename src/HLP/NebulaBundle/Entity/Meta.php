@@ -153,6 +153,13 @@ class Meta
     private $keywords;
 
     /**
+     * @var  string
+     *
+     * @ORM\Column(name="releaseThread", type="string", length=255)
+     */
+    public $releaseThread;
+
+    /**
      * Get id
      *
      * @return integer 

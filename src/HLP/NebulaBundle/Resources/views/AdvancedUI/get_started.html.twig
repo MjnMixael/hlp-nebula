@@ -7,23 +7,54 @@
 {% block body %}
 <div class="row">
   <div class="col-sm-8 col-sm-offset-2">
-    <h2>Install a supported client</h2>
+    <h2>Install Mods</h2>
+    <hr>
+    <p>
+        You can either use the <a href="https://dev.tproxy.de/knossos/">Knossos launcher</a> to install new mods or download them and do it manually.
+    </p>
+    <br>
+    <h2>Upload Mods</h2>
     <hr>
     <p>
         <ul>
-            <li><a href="https://dev.tproxy.de/knossos/">Knossos</a></li>
-            <li><a href="http://www.hard-light.net/forums/index.php?topic=88119.0">m!m's launcher</a></li>
+            {% if not is_granted('ROLE_USER') %}
+                <li><a href="{{ path('fos_user_security_login') }}">Login</a> or <a href="{{ path('fos_user_registration_register') }}">register</a> a new account.</li>
+            {% endif %}
+            <li>Click on the big green button "Upload a new mod".</li>
+            <li>
+                Enter the mod title and use the mod's folder name as the "Unique mod ID". You can also enter a description, specify categories and tags. Finally, you can also upload an image (which must be <strong>exactly</strong> 255px wide and 122px high).<br><strong>Please note</strong>: The categories and keywords aren't used anywhere yet but please enter them so we don't have to add them later on.
+            </li>
+            <li>Click on "Submit". On the next page, click on "New build".</li>
+            <li>If you have any notes which only apply to this release (i.e. "Known issues") please write them into the Notes field.</li>
+            <li>Click on "Add package". Call the first package something like "Required files" or "Core". This name will only appear on the download page and as a disabled option in the launcher.</li>
+            <li>If you want you can add further notes to this package, this field is meant to describe what this package contains and makes more sense for optional packages.</li>
+            <li>
+                We will now add the archives (.7z,.zip,.rar,...) that are required for your mod.
+                <ul class="bbc_list">
+                    <li>
+                        Click "Add file". If you have a direct download link to your files, enter it into the "Download URLs" field. If you have multiple URLs, click on "Add mirror" to add more text fields. (Note: If your file is on Dropbox, you can append "?dl=1" to the end of the link to get a direct download link. For example: <a href="https://www.dropbox.com/s/q7jivmvp7z2nyq7/Lost_v.1.2.zip?dl=1">https://www.dropbox.com/s/q7jivmvp7z2nyq7/Lost_v.1.2.zip?dl=1</a>)<br><br>
+                        If you <strong>don't</strong> have a direct download link, leave the text field empty and click on "Upload a file". Your browser will now ask you to select a file. Please select only one file.<br>Ignore the "File destination" and "Unpack" fields.<br>
+                    </li>
+                    <li>If you have more than one archive with required files, click on "Add file" and repeat the above step for each file.</li>
+                </ul>
+            </li>
+            <li>Ignore the "Client requirements" and "Executables" sections.</li>
+            <li>
+                If your mod has any dependencies (i.e. Media VPs), click on "Add dependency". If you're not sure, open your mod.ini and look the line with "secondarylist".<br>
+                Enter the mod's name in the "Mod ID" field (the name for the Media VPs 2014 is mvps_2014... sorry). I'd recommend to only type the first few characters because after that a autocomplete list will pop up. You <strong>must</strong> select the name from this list. If the mod you want to enter is not on this list, it's not uploaded (yet) which means that someone (you?) has to add it before you can add it as a dependency.
+            </li>
+            <li>Enter "*" in the "Version" field. If your mod has more than one dependency, click on "Add dependency" and repeat the above steps.</li>
+            <li>If you have any optional parts (packages) for your mod, repeat the above steps to add more packages but set the "Status" field to "Optional" or "Recommended" (if you select recommended, the package will be selected by default).</li>
+            <li>
+                Skip the "Post-install scripting" section and click on "Submit". If everything went well, the server should now be downloading your mod and verifying everything. Once this step is complete, the "Continue" button at the top will become active. Before you click it, take a look at the log below.
+            </li>
+            <li>
+                If the server approved your build, the progress bar will be green and you can now install the mod with the launcher. <strong>Congratulations,</strong> you're done.<br>If the bar is red, an error occurred and you (or I) have to fix it. If you're not sure what caused a certain error (or warning), feel free to ask here.
+            </li>
+            <li>
+                If you know how to solve the error, click on "Continue" and then on "Edit". You'll see the same screen as before and can now fix whatever caused the error and submit your build again. If you're sure that everything was correct and the issue happened on the server, you can click on "Continue" and "Reprocess" to have the server verify the build again.
+            </li>
         </ul>
-    </p>
-    <br>
-    <h2>Create your <span class="text-info">personal mod repository</span></h2>
-    <hr>
-    <p>
-        More information on Hard Light Productions forum: <a href="http://www.hard-light.net/forums/index.php?topic=86364.0">official Knossos and Nebula development thread.</a>
-        {% if is_granted('ROLE_USER') %}
-            <br><br>You can already
-            <a href="{{ path('hlp_nebula_repository_meta_create') }}">upload your own mods</a>.
-        {% endif %}
     </p>
   </div>
 </div>

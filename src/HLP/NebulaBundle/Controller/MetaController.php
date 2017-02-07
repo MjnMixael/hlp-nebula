@@ -231,6 +231,9 @@ class MetaController extends Controller
                 ->getFlashBag()
                 ->add('success', 'Mod <strong>"'.$meta->getTitle().'" (id: '.$meta->getMetaId().')</strong> has been successfully edited.');
 
+            if(empty($referURL)) {
+                $referURL = $this->generateUrl('hlp_nebula_repository_meta_overview', array('meta' => $meta));
+            }
             return $this->redirect($referURL);
         }
 
