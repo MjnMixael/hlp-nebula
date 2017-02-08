@@ -32,7 +32,7 @@
       <li class="{% if app.request.attributes.get('_route') == 'hlp_nebula_mod_activity' %}active{% endif %}"><a href="{{ path('hlp_nebula_mod_activity', {'owner': owner.nameCanonical, 'mod': mod.modId}) }}"><h4 class="titletab">Activity</h4></a></li>
     </ul>
     
-  {% include "HLPNebulaBundle:AdvancedUI:flashbox.html.twig" %}
+  {% include "HLPNebulaBundle::flashbox.html.twig" %}
   {% block mod_tab %}
   {% endblock %}
   </div>

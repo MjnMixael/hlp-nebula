@@ -84,20 +84,15 @@
     </nav>
     <div class="container">
     {% block body %}
-    {# src/Sdz/UserBundle/Resources/views/layout.html.twig #}
 
-
-
-  {# On affiche les messages flash que définissent les contrôleurs du bundle #}
   {% for key, messages in app.session.flashbag.all() %}
     {% for message in messages %}
  
-      {{ message|trans({}, 'FOSUserBundle') }}
+      {{ message }}
  
     {% endfor %}
   {% endfor %}
 
-  {# On définit ce block, dans lequel vont venir s'insérer les autres vues du bundle #}
   {% block fos_user_content %}
   {% endblock fos_user_content %}
 

@@ -132,7 +132,7 @@ class BranchController extends Controller
 
             $request->getSession()
                 ->getFlashBag()
-                ->add('success', 'New branch <strong>"'.$branch->getName().'" (id: '.$branch->getBranchId().')</strong> successfully created.');
+                ->add('success', 'New branch "'.$branch->getName().'" (id: '.$branch->getBranchId().') successfully created.');
 
             return $this->redirect($this->generateUrl('hlp_nebula_repository_branch', array(
                 'meta'      => $meta,
@@ -162,7 +162,7 @@ class BranchController extends Controller
 
             $request->getSession()
                 ->getFlashBag()
-                ->add('success', 'Branch <strong>"'.$branch->getName().'" (id: '.$branch->getBranchId().')</strong> has been successfully edited.');
+                ->add('success', 'Branch "'.$branch->getName().'" (id: '.$branch->getBranchId().') has been successfully edited.');
 
             return $this->redirect($referURL);
         }
@@ -193,7 +193,7 @@ class BranchController extends Controller
 
             $request->getSession()
                 ->getFlashBag()
-                ->add('success', 'Branch <strong>"'.$branch->getName().'" (id: '.$branch->getBranchId().')</strong> has been deleted.');
+                ->add('success', 'Branch "'.$branch->getName().'" (id: '.$branch->getBranchId().') has been deleted.');
 
             return $this->redirect($this->generateUrl('hlp_nebula_repository_meta', array(
                 'meta'   => $branch->getMeta()

@@ -34,6 +34,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 use HLP\NebulaBundle\Entity\Meta;
 use HLP\NebulaBundle\Entity\Branch;
@@ -73,9 +74,6 @@ class BuildController extends Controller
             $em->persist($build);
             $em->flush();
 
-            // $request->getSession()
-            //     ->getFlashBag()
-            //     ->add('success', 'New build <strong>version '.$build->getVersion().'</strong> successfully created.');
             return $this->redirect($this->generateUrl('hlp_nebula_process', array(
                 'meta'   => $build->getMeta(),
                 'branch' => $build->getBranch(),
@@ -86,7 +84,7 @@ class BuildController extends Controller
         if ((!$form->isValid()) && $request->isMethod('POST')) {
             $request->getSession()
                 ->getFlashBag()
-                ->add('error', '<strong>Invalid data !</strong> Please check this form again.');
+                ->add('error', 'Invalid data! Please check this form again.');
         }
 
         return $this->render('HLPNebulaBundle:Build:create.html.twig', array(
@@ -131,7 +129,7 @@ class BuildController extends Controller
         if ((!$form->isValid()) && $request->isMethod('POST')) {
             $request->getSession()
                 ->getFlashBag()
-                ->add('error', '<strong>Invalid data !</strong> Please check this form again.');
+                ->add('error', 'Invalid data! Please check this form again.');
         }
 
         return $this->render('HLPNebulaBundle:Build:create.html.twig', array(
@@ -303,7 +301,7 @@ class BuildController extends Controller
 
             $request->getSession()
                 ->getFlashBag()
-                ->add('success', "New build <strong>version ".$newBuild->getVersion()."</strong> successfully created from <strong>version ".$build->getVersion()."</strong>.");
+                ->add('success', "New build version ".$newBuild->getVersion()." successfully created from version ".$build->getVersion().".");
 
             return $this->redirect($this->generateUrl('hlp_nebula_process', array(
                 'meta'   => $meta,
@@ -314,7 +312,7 @@ class BuildController extends Controller
 
         if ((!$form->isValid()) && $request->isMethod('POST')) {
             $request->getSession()->getFlashBag()
-                ->add('error', '<strong>Invalid data !</strong> Please check this form again.');
+                ->add('error', 'Invalid data! Please check this form again.');
         }
 
         return $this->render('HLPNebulaBundle:Build:create.html.twig', array(
@@ -347,7 +345,7 @@ class BuildController extends Controller
             $em->flush();
 
             $request->getSession()->getFlashBag()
-                ->add('success', "New build <strong>version ".$newBuild->getVersion()."</strong> successfully created from <strong>version ".$build->getVersion()."</strong>.");
+                ->add('success', "New build version ".$newBuild->getVersion()." successfully created from version ".$build->getVersion().".");
 
             return $this->redirect($this->generateUrl('hlp_nebula_build', array(
                 'meta'    => $meta,
@@ -358,7 +356,7 @@ class BuildController extends Controller
 
         if ((!$form->isValid()) && $request->isMethod('POST')) {
             $request->getSession()->getFlashBag()
-                ->add('error', '<strong>Invalid data !</strong> Please check this form again.');
+                ->add('error', 'Invalid data! Please check this form again.');
         }
 
         return $this->render('HLPNebulaBundle:Build:transfer_form.html.twig', array(
@@ -479,12 +477,12 @@ class BuildController extends Controller
                         $build->setState(Build::DONE);
 
                         $request->getSession()->getFlashBag()
-                            ->add('success', "Build <strong>version ".$build->getVersion()."</strong> has been successfully validated.");
+                            ->add('success', "Build version ".$build->getVersion()." has been successfully validated.");
                     } else {
                         $build->setState(Build::FAILED);
 
                         $request->getSession()->getFlashBag()
-                            ->add('warning', "Build <strong>version ".$build->getVersion()."</strong> validation has failed.");
+                            ->add('warning', "Build version ".$build->getVersion()." validation has failed.");
                     }
 
                     $this->getDoctrine()->getManager()->flush();
@@ -537,7 +535,7 @@ class BuildController extends Controller
             $this->getDoctrine()->getManager()->flush();
 
             $request->getSession()->getFlashBag()
-                ->add('warning', "Build <strong>version ".$build->getVersion()."</strong> has been marked as failed. Processing canceled.");
+                ->add('warning', "Build version ".$build->getVersion()." has been marked as failed. Processing canceled.");
         }
 
         return $this->redirect($this->generateUrl('hlp_nebula_repository_build_edit', array(
@@ -566,7 +564,7 @@ class BuildController extends Controller
             $em->flush();
 
             $request->getSession()->getFlashBag()
-                ->add('success', "Build <strong>version ".$build->getVersion()."</strong> has been deleted.");
+                ->add('success', "Build version ".$build->getVersion()." has been deleted.");
 
             return $this->redirect($this->generateUrl('hlp_nebula_repository_branch', array(
                 'meta'   => $meta,
@@ -580,5 +578,58 @@ class BuildController extends Controller
             'build'  => $build,
             'form'   => $form->createView()
         ));
+    }
+
+    /**
+     * @ParamConverter("branch", options={"mapping": {"meta": "meta", "branch": "branchId"}, "repository_method" = "findOneWithParent"})
+     */
+    public function apiCreateBuildAction(Request $request, Branch $branch)
+    {
+        $key = $request->post->get('apikey');
+        $em = $this->getDoctrine()->getManager();
+        $user = empty($key) ? null : $em->getRepository('HLPNebulaBundle:User')->findApiUser($key);
+
+        if(!$user || !$this->isGranted('EDIT', $branch->getMeta())) {
+            throw new AccessDeniedException('Invalid API Key!');
+        }
+
+        $build = new Build();
+        $form = $this->createForm(new BuildType(), $build);
+        $form->handleRequest($request);
+
+        if ($form->isValid()) {
+            $build->setState(Build::WAITING);
+            $branch->addBuild($build);
+
+            $em->persist($build);
+            $em->flush();
+
+            $jsonBuilder = $this->container->get('hlpnebula.json_builder');
+
+            $data = $jsonBuilder->createFromBuild($build, false);
+            $data = json_encode(array('mods' => array($data)));
+
+            $webhook = $this->generateUrl('hlp_nebula_process_finalise', array(
+                'meta'   => $meta,
+                'branch' => $branch,
+                'build'  => $build
+            ), true);
+
+            $ksresponse = $ks->requestConversion($data, $webhook);
+
+            if ($ksresponse) {
+                $build->setState(Build::PROCESSING);
+                $build->setConverterToken($ksresponse->token);
+                $build->setConverterTicket($ksresponse->ticket);
+
+                $em->flush();
+
+                return new JsonResponse(array('success' => true, 'valid' => true));
+            } else {
+                return new JsonResponse(array('success' => false, 'valid' => true));
+            }
+        } else {
+            return new JsonResponse(array('success' => false, 'valid' => false));
+        }
     }
 }

@@ -29,7 +29,7 @@
       <li class="{% if app.request.attributes.get('_route') == 'hlp_nebula_user_profile' %}active{% endif %}"><a href="{{ path('hlp_nebula_user_profile', {'user': user.usernameCanonical}) }}"><h4 class="titletab">Modder profile</h4></a></li>
       <li class="{% if app.request.attributes.get('_route') == 'hlp_nebula_user_activity' %}active{% endif %}"><a href="{{ path('hlp_nebula_user_activity', {'user': user.usernameCanonical}) }}"><h4 class="titletab">Activity</h4></a></li>
     </ul>
-  {% include "HLPNebulaBundle:AdvancedUI:flashbox.html.twig" %}
+  {% include "HLPNebulaBundle::flashbox.html.twig" %}
     
   {% block user_tab %}
   {% endblock %}

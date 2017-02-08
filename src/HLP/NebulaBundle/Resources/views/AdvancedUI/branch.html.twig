@@ -32,7 +32,7 @@
       <li class="{% if app.request.attributes.get('_route') == 'hlp_nebula_branch_details' %}active{% endif %}"><a href="{{ path('hlp_nebula_branch_details', {'owner': owner.nameCanonical, 'mod': mod.modId, 'branch': branch.branchId}) }}"><h4 class="titletab">Branch details</h4></a></li>
       <li class="{% if app.request.attributes.get('_route') == 'hlp_nebula_branch_activity' %}active{% endif %}"><a href="{{ path('hlp_nebula_branch_activity', {'owner': owner.nameCanonical, 'mod': mod.modId, 'branch': branch.branchId}) }}"><h4 class="titletab">Activity</h4></a></li>
     </ul>
-  {% include "HLPNebulaBundle:AdvancedUI:flashbox.html.twig" %}
+  {% include "HLPNebulaBundle::flashbox.html.twig" %}
   {% block branch_tab %}
   {% endblock %}
   </div>
