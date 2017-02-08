@@ -134,12 +134,12 @@ class AJAXController extends Controller
     {
       $desc = $meta->getDescription();
       $notes = $meta->getNotes();
-      $tags = $meta->getKeywords();
+      $tags = implode(' ', $meta->getKeywords());
 
       $data[] = array(
         'title' => $meta->getTitle(),
         'text'  => (empty($desc) ? '' : $desc . "\n") . (empty($notes) ? '' : $notes),
-        'tags'  => empty($tags) ? '' : implode(' ', $meta->getKeywords()),
+        'tags'  => empty($tags) ? '' : $tags,
         'url'   => $this->generateUrl('hlp_nebula_repository_meta_overview', array('meta' => $meta->getMetaId()))
       );
     }
