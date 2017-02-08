@@ -54,28 +54,35 @@ class UserRepository extends EntityRepository
         return new Paginator($query, true);
     }
     
-  public function findSingleUser($usernameCanonical)
-  {
+    public function findSingleUser($usernameCanonical)
+    {
 
-    $qb = $this->_em->createQueryBuilder();
-    $qb->select('i')
-       ->from('HLPNebulaBundle:User', 'i')
-       ->where('i.usernameCanonical = :usernameCanonical')
-       ->setParameter('usernameCanonical', $usernameCanonical);
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('i')
+            ->from('HLPNebulaBundle:User', 'i')
+            ->where('i.usernameCanonical = :usernameCanonical')
+            ->setParameter('usernameCanonical', $usernameCanonical);
 
-    return $qb->getQuery()
-              ->getOneOrNullResult();
-  }
-  
-  public function findAllUsersWithMods()
-  {
-    $qb = $this->_em->createQueryBuilder();
-    $qb->select('i')
-       ->from('HLPNebulaBundle:User', 'i')
-       ->leftJoin('i.mods', 'm')
-       ->addSelect('m');
-       
-    return $qb->getQuery()
-              ->getResult();
-  }
+        return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    public function findAllUsersWithMods()
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('i')
+            ->from('HLPNebulaBundle:User', 'i')
+            ->leftJoin('i.mods', 'm')
+            ->addSelect('m');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findApiUser($apiKey)
+    {
+        $qb = $this->createQueryBuilder()
+            ->where('apiKey = :key')
+            ->setParameter('key', $apiKey);
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
 }

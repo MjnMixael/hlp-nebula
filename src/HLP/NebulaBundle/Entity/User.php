@@ -59,6 +59,11 @@ class User extends BaseUser
     private $joined;
 
     /**
+     * @ORM\Column(name="apiKey", type="string", length=60, nullable=true)
+     */
+    private $apiKey;
+
+    /**
     * Constructor
     */
     public function __construct()
@@ -66,8 +71,8 @@ class User extends BaseUser
         parent::__construct();
 
         $this->metas = new \Doctrine\Common\Collections\ArrayCollection();
-
         $this->joined = new \Datetime;
+        $this->apiKey = null;
     }
 
     public function __toString()
@@ -106,6 +111,32 @@ class User extends BaseUser
     public function getJoined()
     {
         return $this->joined;
+    }
+
+    /**
+     * Generate a new API key.
+     */
+    public function genApiKey()
+    {
+        $this->apiKey = rtrim(str_replace('+', '.', base64_encode(random_bytes(45))), '=');
+    }
+
+    /**
+     * Remove API key
+     */
+    public function unsetApiKey()
+    {
+        $this->apiKey = null;
+    }
+
+    /*
+     * Get the API key
+     *
+     * @return string
+     */
+    public function getApiKey()
+    {
+        return $this->apiKey;
     }
 
     /**
