@@ -7,32 +7,48 @@
 {% block body %}
 <div class="row">
   <div class="col-sm-8 col-sm-offset-2">
-  <p class="lead">There {% if modsList|length > 1 %}are{% else %}is{% endif %} {% if modsList|length == 0 %}no{% else %}<span class="text-info">{{ modsList|length }}</span>{% endif %} registered mod{% if modsList|length > 1 %}s{% endif %}.</p>
-{% for mod in modsList %}
-  {% if loop.first %}
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Mod ID</th>
-          <th>Mod title</th>
-          <th>Released by</th>
-          <th>First release</th>
-        </tr>
-      </thead>
-      <tbody>
-  {% endif %}
-        <tr>
-          <td><a href="{{ path('hlp_nebula_repository_meta', {'meta': mod.metaId}) }}">{{ mod.metaId }}</a></td>
-          <td>{{ mod.title }}</td>
-          <td>{# mod.owner.name #}</td>
-          <td>{{ mod.firstRelease|date("d M Y") }}</td>
-        </tr>
-  {% if loop.last %}
-      </tbody>
-    </table>
-  {% endif %}
-{% endfor %}
+    <p class="lead">There {% if modsList|length > 1 %}are{% else %}is{% endif %} {% if modsList|length == 0 %}no{% else %}<span class="text-info">{{ modsList|length }}</span>{% endif %} registered mod{% if modsList|length > 1 %}s{% endif %}.</p>
 
+    <p><input type="search" class="form-control modSearch" id="tipue_search_input" placeholder="Search..."></p>
+
+    <div id="tipue_search_content">
+      {% for mod in modsList %}
+        {% if loop.first %}
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Mod ID</th>
+                <th>Mod title</th>
+                <th>Released by</th>
+                <th>First release</th>
+              </tr>
+            </thead>
+            <tbody>
+        {% endif %}
+              <tr>
+                <td><a href="{{ path('hlp_nebula_repository_meta', {'meta': mod.metaId}) }}">{{ mod.metaId }}</a></td>
+                <td>{{ mod.title }}</td>
+                <td>{# mod.owner.name #}</td>
+                <td>{{ mod.firstRelease|date("d M Y") }}</td>
+              </tr>
+        {% if loop.last %}
+            </tbody>
+          </table>
+        {% endif %}
+      {% endfor %}
+    </div>
   </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script type="text/javascript">
+    $('#tipue_search_input').tipuesearch({
+      mode: 'json',
+      contentLocation: {{ path('hlp_nebula_ajax_search')|json_encode|raw }},
+      show: 20,
+      showURL: false
+    });
+  </script>
 {% endblock %}

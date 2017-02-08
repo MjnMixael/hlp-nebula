@@ -123,4 +123,27 @@ class AJAXController extends Controller
 
     return $response;
   }
+
+  public function searchIndexAction(Request $request)
+  {
+    $metas = $this->getDoctrine()->getManager()
+      ->getRepository('HLPNebulaBundle:Meta')->findAll();
+
+    $data = array();
+    foreach($metas as $meta)
+    {
+      $desc = $meta->getDescription();
+      $notes = $meta->getNotes();
+      $tags = $meta->getKeywords();
+
+      $data[] = array(
+        'title' => $meta->getTitle(),
+        'text'  => (empty($desc) ? '' : $desc . "\n") . (empty($notes) ? '' : $notes),
+        'tags'  => empty($tags) ? '' : implode(' ', $meta->getKeywords()),
+        'url'   => $this->generateUrl('hlp_nebula_repository_meta_overview', array('meta' => $meta->getMetaId()))
+      );
+    }
+
+    return new JsonResponse(array('pages' => $data));
+  }
 }

@@ -24,10 +24,12 @@
     {% for build in meta_data %}
         <h4>{{ build.version }}</h5>
 
-        {{ build.build.notes|nl2br }}
+        <p>
+            {{ build.build.notes|nl2br }}
+        </p>
 
-        <a href="{{ path('hlp_nebula_repository_build_files', {'meta': meta, 'branch': build.build.branch, 'build': build.build}) }}">
-            Show files
+        <a class="pull-right btn btn-default" href="{{ path('hlp_nebula_repository_build_files', {'meta': meta, 'branch': build.build.branch, 'build': build.build}) }}">
+            Filelist
         </a><br>
         {% for pkg in build.packages %}
             {% if not (loop.first and loop.last) %}<h5>{{ pkg.name }}</h6>{% endif %}

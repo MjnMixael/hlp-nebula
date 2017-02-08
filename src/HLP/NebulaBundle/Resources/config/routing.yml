@@ -51,10 +51,13 @@ hlp_nebula_ajax_packages:
     path:     /ajax/{mod}/search_packages
     defaults: { _controller: HLPNebulaBundle:AJAX:searchPackagesInMeta }
 
-# AJAX routes
 hlp_nebula_ajax_ticket:
     path:     /ajax/t
     defaults: { _controller: HLPNebulaBundle:AJAX:generateTicket }
+
+hlp_nebula_ajax_search:
+    path:     /ajax/tipdex
+    defaults: { _controller: HLPNebulaBundle:AJAX:searchIndex }
 
 # Nebula user public data routes
 
