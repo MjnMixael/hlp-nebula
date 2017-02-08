@@ -53,6 +53,15 @@ class UserRepository extends EntityRepository
 
         return new Paginator($query, true);
     }
+
+    public function searchUsers($term)
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.usernameCanonical LIKE :term')
+            ->setParameter('term', $term . '%')
+            ->getQuery()
+            ->getResult();
+    }
     
     public function findSingleUser($usernameCanonical)
     {
@@ -79,7 +88,7 @@ class UserRepository extends EntityRepository
 
     public function findApiUser($apiKey)
     {
-        $qb = $this->createQueryBuilder()
+        $qb = $this->createQueryBuilder('u')
             ->where('apiKey = :key')
             ->setParameter('key', $apiKey);
 

@@ -27,7 +27,6 @@ namespace HLP\NebulaBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
 use HLP\NebulaBundle\Entity\User;
 use Symfony\Component\HttpFoundation\Session\Session;
 
@@ -66,18 +65,7 @@ class UserController extends Controller
             throw $this->createNotFoundException("Page ".$page." not found.");
         }
         
-        $aclProvider = $this->get('security.acl.provider');
-        $objectIdentities = array();
-        foreach ($metasList as $meta) {
-            $objectIdentities[] = ObjectIdentity::fromDomainObject($meta);
-        }
-        
-        $aclProvider->findAcls($objectIdentities);
-        
-        $session = new Session();
-        $session->set('meta_refer', $this->getRequest()
-                                         ->getUri()
-        );
+        $request->getSession()->set('meta_refer', $request->getUri());
         
         return $this->render('HLPNebulaBundle:User:metas.html.twig', array(
             'user'  => $user,

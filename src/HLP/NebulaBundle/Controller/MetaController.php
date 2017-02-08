@@ -30,15 +30,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
-use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
-use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
-use Symfony\Component\Security\Acl\Permission\MaskBuilder;
 use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 use HLP\NebulaBundle\Entity\Meta;
 use HLP\NebulaBundle\Entity\Branch;
 use HLP\NebulaBundle\Entity\Build;
+use HLP\NebulaBundle\Entity\User;
 use HLP\NebulaBundle\Form\MetaType;
 use HLP\NebulaBundle\Form\MetaEditType;
 use HLP\NebulaBundle\Form\BranchType;
@@ -122,11 +120,77 @@ class MetaController extends Controller
             throw $this->createNotFoundException("Page ".$page." not found.");
         }
 
+        $form = $this->createFormBuilder()
+            ->setAction($this->generateUrl('hlp_nebula_repository_meta_team_add', array('meta' => $meta)))
+            ->add('user', TextType::class)
+            ->getForm();
+
         return $this->render('HLPNebulaBundle:Meta:team.html.twig', array(
+            'form'  => $form->createView(),
             'meta'  => $meta,
             'usersList' => $usersList,
             'nbPages' => $nbPages,
             'page' => $page
+        ));
+    }
+
+    /**
+     * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
+     * @Security("is_granted('EDIT', meta)")
+     */
+    public function addTeamMemberAction(Request $request, Meta $meta)
+    {
+        $form = $this->createFormBuilder()
+            ->add('user', TextType::class)
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if($form->isValid()) {
+            $em = $this->getDoctrine()->getManager();
+            $userName = $form->getData()['user'];
+            $user = $em->getRepository('HLPNebulaBundle:User')->findSingleUser($userName);
+
+            if(empty($user)) {
+                $request->getSession()->getFlashBag()
+                    ->add('error', 'User ' . $userName . ' was not found!');
+
+                return $this->redirect($this->generateUrl('hlp_nebula_repository_meta_team', array('meta' => $meta)));
+            } else {
+                $meta->addUser($user);
+                $em->flush();
+            }
+        } else {
+            $request->getSession()->getFlashBag()
+                ->add('error', 'Invalid data was sent!');
+        }
+
+        return $this->redirect($this->generateUrl('hlp_nebula_repository_meta_team', array('meta' => $meta)));
+    }
+
+    /**
+     * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
+     * @ParamConverter("user", options={"mapping": {"user": "usernameCanonical"}})
+     * @Security("is_granted('EDIT', meta)")
+     */
+    public function removeTeamMemberAction(Request $request, Meta $meta, User $user)
+    {
+        $form = $this->createFormBuilder()->getForm();
+        $form->handleRequest($request);
+
+        if($form->isValid()) {
+            $em = $this->getDoctrine()->getManager();
+                
+            $meta->removeUser($user);
+            $em->flush();
+
+            return $this->redirect($this->generateUrl('hlp_nebula_repository_meta_team', array('meta' => $meta)));
+        }
+
+        return $this->render('HLPNebulaBundle:Meta:remove_team_member.html.twig', array(
+            'form'   => $form->createView(),
+            'meta'   => $meta,
+            'member' => $user
         ));
     }
 
@@ -166,28 +230,6 @@ class MetaController extends Controller
             $em->persist($defaultBranch);
 
             $em->flush();
-
-            /*
-            // TODO: Add proper escaping!
-            $request->getSession()
-                  ->getFlashBag()
-                  ->add('success', 'New mod <strong>"'.$meta->getTitle().'" (id: '.$meta->getMetaId().')</strong> successfully created.<br/><hr/>A default branch has been created for this mod : <strong>"'.$defaultBranch->getName().'" (id: '.$defaultBranch->getBranchId().')</strong>.');
-            */
-
-            // TODO: Maybe this should be moved into a method of Meta?
-            // création de l'ACL
-            $aclProvider = $this->get('security.acl.provider');
-            $objectIdentity = ObjectIdentity::fromDomainObject($meta);
-            $acl = $aclProvider->createAcl($objectIdentity);
-
-            // retrouve l'identifiant de sécurité de l'utilisateur actuellement connecté
-            $user = $this->getUser();
-
-            // donne accès au propriétaire
-            $securityIdentity = UserSecurityIdentity::fromAccount($user);
-            $acl->insertObjectAce($securityIdentity, MaskBuilder::MASK_OWNER);
-
-            $aclProvider->updateAcl($acl);
 
             return $this->redirect($this->generateUrl('hlp_nebula_repository_branch', array(
                 'meta'    => $meta,
@@ -229,7 +271,7 @@ class MetaController extends Controller
 
             $request->getSession()
                 ->getFlashBag()
-                ->add('success', 'Mod <strong>"'.$meta->getTitle().'" (id: '.$meta->getMetaId().')</strong> has been successfully edited.');
+                ->add('success', 'Mod "'.$meta->getTitle().'" (id: '.$meta->getMetaId().') has been successfully edited.');
 
             if(empty($referURL)) {
                 $referURL = $this->generateUrl('hlp_nebula_repository_meta_overview', array('meta' => $meta));
@@ -264,7 +306,7 @@ class MetaController extends Controller
 
             $request->getSession()
                 ->getFlashBag()
-                ->add('success', 'Mod <strong>"'.$meta->getTitle().'" (id: '.$meta->getMetaId().')</strong> has been deleted.');
+                ->add('success', 'Mod "'.$meta->getTitle().'" (id: '.$meta->getMetaId().') has been deleted.');
 
             return $this->redirect($this->generateUrl('hlp_nebula_user', array('user' => $this->getUser())));
         }
@@ -274,5 +316,16 @@ class MetaController extends Controller
             'form'     => $form->createView(),
             'referURL' => $referURL
         ));
+    }
+
+    /**
+     * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
+     */
+    public function repoAction(Request $request, Meta $meta)
+    {
+        return $this->redirect($this->generateUrl('hlp_nebula_fs2mod_repo', array(
+            'meta' => $meta,
+            'branch' => $this->getDefaultBranch()
+        )));
     }
 }

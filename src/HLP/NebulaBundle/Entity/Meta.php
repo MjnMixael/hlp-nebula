@@ -555,10 +555,10 @@ class Meta
      * @param \HLP\NebulaBundle\Entity\User $users
      * @return Meta
      */
-    public function addUser(\HLP\NebulaBundle\Entity\User $users)
+    public function addUser(\HLP\NebulaBundle\Entity\User $user)
     {
-        $this->users[] = $users;
-        $users->addMeta($this);
+        $this->users[] = $user;
+        $user->addMeta($this);
         return $this;
     }
 
@@ -567,9 +567,11 @@ class Meta
      *
      * @param \HLP\NebulaBundle\Entity\User $users
      */
-    public function removeUser(\HLP\NebulaBundle\Entity\User $users)
+    public function removeUser(\HLP\NebulaBundle\Entity\User $user)
     {
-        $this->users->removeElement($users);
+        $this->users->removeElement($user);
+        $user->removeMeta($this);
+        return $this;
     }
 
     /**

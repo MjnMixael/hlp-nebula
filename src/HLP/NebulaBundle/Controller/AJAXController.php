@@ -53,11 +53,33 @@ class AJAXController extends Controller
         }
       }
       
-      $response = new JsonResponse();
-      $response->setData($data);
-      $response->headers->set('Content-Type', 'application/json');
+      return new JsonResponse($data);
+    }
+    else
+    {
+      return $this->redirect('/');
+    }
+  }
 
-      return $response;
+  public function searchUsersAction(Request $request)
+  {
+    if($request->isXmlHttpRequest())
+    {
+      $term = $request->query->get('term');
+      $data = array();
+
+      if(!empty($term))
+      {
+        $users = $this->getDoctrine()->getManager()
+          ->getRepository('HLPNebulaBundle:User')->searchUsers($term);
+
+        foreach($users as $user)
+        {
+          $data[] = $user->getUsernameCanonical();
+        }
+      }
+      
+      return new JsonResponse($data);
     }
     else
     {
@@ -81,11 +103,7 @@ class AJAXController extends Controller
         $data[] = $package->getName();
       }
       
-      $response = new JsonResponse();
-      $response->setData(array_unique($data));
-      $response->headers->set('Content-Type', 'application/json');
-
-      return $response;
+      return new JsonResponse(array_unique($data));
     }
     else
     {

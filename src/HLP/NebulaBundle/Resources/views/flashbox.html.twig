@@ -1,9 +1,9 @@
 {% set bag = app.session.flashbag %}
 {% for key, cls in {'success': 'success', 'warning': 'warning', 'error': 'danger'} %}
-    {% if bag.get(key) %}
+    {% if bag.has(key) %}
         <div class="alert alert-{{ cls|raw }} alert-dismissable" role="alert">
             <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-            {% for msg in bag.get('success') %}
+            {% for msg in bag.get(key) %}
                 {{ msg }}{% if not loop.last %}<br>{% endif %}
             {% endfor %}
         </div>

@@ -43,6 +43,10 @@ hlp_nebula_ajax_mods:
     path:     /ajax/search_mods
     defaults: { _controller: HLPNebulaBundle:AJAX:searchMetas }
 
+hlp_nebula_ajax_users:
+    path:     /ajax/search_users
+    defaults: { _controller: HLPNebulaBundle:AJAX:searchUsers }
+
 hlp_nebula_ajax_packages:
     path:     /ajax/{mod}/search_packages
     defaults: { _controller: HLPNebulaBundle:AJAX:searchPackagesInMeta }
@@ -101,6 +105,14 @@ hlp_nebula_repository_meta_team:
     defaults: { _controller: HLPNebulaBundle:Meta:showTeam, page: 1 }
     requirements:
         page: \d*
+
+hlp_nebula_repository_meta_team_add:
+    path:     /repository/{meta}/team/add
+    defaults: { _controller: HLPNebulaBundle:Meta:addTeamMember }
+
+hlp_nebula_repository_meta_team_remove:
+    path:     /repository/{meta}/team/remove/{user}
+    defaults: { _controller: HLPNebulaBundle:Meta:removeTeamMember }
 
 hlp_nebula_repository_meta_branches:
     path:     /repository/{meta}/branches/{page}
@@ -252,22 +264,21 @@ hlp_nebula_delete_build:
     path:     /repository/{meta}/{branch}/{build}/delete
     defaults: { _controller: HLPNebulaBundle:Build:delete }
 
-# hlp_nebula_fs2mod:
-#     path:     /repo/{path}.json
-#     defaults:
-#         _controller: HLPNebulaBundle:Build:raw
-#     requirements:
-#         path:  ^.+$
+hlp_nebula_api_create_build:
+    path:     /api/{meta}/{branch}/create
+    defaults: { _controller: HLPNebulaBundle:Build:apiCreateBuild }
+
+hlp_nebula_fs2mod_meta:
+    pattern: /repo/{meta}.json
+    defaults: { _controller: HLPNebulaBundle:Meta:repo }
 
 hlp_nebula_fs2mod_repo:
     path:     /repo/{meta}/{branch}.json
-    defaults:
-        _controller: HLPNebulaBundle:Branch:repo
+    defaults: { _controller: HLPNebulaBundle:Branch:repo }
 
 hlp_nebula_fs2mod_priv_repo:
     path:     /privrepo/{meta}/{branch}_{key}.json
-    defaults:
-        _controller: HLPNebulaBundle:Branch:privRepo
+    defaults: { _controller: HLPNebulaBundle:Branch:privRepo }
 
 remove_trailing_slash:
     path: /{url}

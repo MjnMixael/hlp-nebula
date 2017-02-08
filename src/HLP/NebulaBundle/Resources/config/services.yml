@@ -8,3 +8,9 @@ services:
     hlp_nebula.knossos:
         class: HLP\NebulaBundle\KSConnect\KSConnect
         arguments: ['%hlp_nebula.knossos.server%', '%hlp_nebula.knossos.secure%', '%hlp_nebula.knossos.apinum%', '%hlp_nebula.knossos.apikey%']
+
+    hlp_nebula.meta_voter:
+        class: HLP\NebulaBundle\Security\MetaVoter
+        public: false
+        tags:
+            - { name: security.voter }
