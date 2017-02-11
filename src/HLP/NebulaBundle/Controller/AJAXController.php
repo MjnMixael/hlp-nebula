@@ -134,7 +134,7 @@ class AJAXController extends Controller
     {
       $desc = $meta->getDescription();
       $notes = $meta->getNotes();
-      $tags = implode(' ', $meta->getKeywords());
+      $tags = $meta->getKeywords();
 
       $data[] = array(
         'title' => $meta->getTitle(),

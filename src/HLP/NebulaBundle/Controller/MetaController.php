@@ -336,7 +336,7 @@ class MetaController extends Controller
     public function trackInstallAction(Request $request, Meta $meta)
     {
         $repo = $this->getDoctrine()->getManager()->getRepository('HLPNebulaBundle:Meta');
-        if($repo->incInstallCount($meta->metaId)) {
+        if($repo->incInstallCount($meta->getMetaId())) {
             return new JsonResponse(array('success' => true));
         } else {
             return new JsonResponse(array('success' => false));
