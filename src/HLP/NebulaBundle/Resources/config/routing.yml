@@ -268,8 +268,12 @@ hlp_nebula_delete_build:
     defaults: { _controller: HLPNebulaBundle:Build:delete }
 
 hlp_nebula_api_create_build:
-    path:     /api/{meta}/{branch}/create
+    path:     /api/build/create/{meta}/{branch}
     defaults: { _controller: HLPNebulaBundle:Build:apiCreateBuild }
+
+hlp_nebula_api_track_install:
+    path:     /api/track/install/{meta}
+    defaults: { _controller: HLPNebulaBundle:Meta:trackInstall }
 
 hlp_nebula_fs2mod_meta:
     pattern: /repo/{meta}.json

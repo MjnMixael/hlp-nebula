@@ -27,6 +27,7 @@ namespace HLP\NebulaBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -327,5 +328,18 @@ class MetaController extends Controller
             'meta' => $meta,
             'branch' => $this->getDefaultBranch()
         )));
+    }
+
+    /**
+     * @ParamConverter("meta", options={"mapping": {"meta": "metaId"}})
+     */
+    public function trackInstallAction(Request $request, Meta $meta)
+    {
+        $repo = $this->getDoctrine()->getManager()->getRepository('HLPNebulaBundle:Meta');
+        if($repo->incInstallCount($meta->metaId)) {
+            return new JsonResponse(array('success' => true));
+        } else {
+            return new JsonResponse(array('success' => false));
+        }
     }
 }

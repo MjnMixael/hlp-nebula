@@ -157,7 +157,14 @@ class Meta
      *
      * @ORM\Column(name="releaseThread", type="string", length=255)
      */
-    public $releaseThread;
+    private $releaseThread;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="installCount", type="integer")
+     */
+    private $installCount;
 
     /**
      * Get id
@@ -491,6 +498,38 @@ class Meta
             }
         }
         return $keywordsStr;
+    }
+
+    /**
+     * Set release thread
+     *
+     * @param string
+     * @return Meta
+     */
+    public function setReleaseThread($value)
+    {
+        $this->releaseThread = $value;
+        return $this;
+    }
+
+    /**
+     * Get release thread
+     *
+     * @return string
+     */
+    public function getReleaseThread()
+    {
+        return $this->releaseThread;
+    }
+
+    /**
+     * Get the install count
+     *
+     * @return integer
+     */
+    public function getInstallCount()
+    {
+        return $this->installCount;
     }
 
     /**

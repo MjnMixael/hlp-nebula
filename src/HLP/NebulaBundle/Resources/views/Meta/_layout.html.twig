@@ -21,6 +21,11 @@
                     <span class="glyphicon glyphicon-link"></span> <a href="{{ meta.releaseThread }}">Release Thread</a>
                 </p>
             {% endif %}
+            {% if meta.installCount > 0 %}
+                <p class="text-muted">
+                    <span class="glyphicon glyphicon-signal"></span> {{ meta.installCount }} Installations
+                </p>
+            {% endif %}
             <hr>
             <div class="row">
                 <div class="col-md-4 text-center">

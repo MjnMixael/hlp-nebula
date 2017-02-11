@@ -63,4 +63,15 @@ class MetaRepository extends EntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    public function incInstallCount($metaId)
+    {
+        $qb = $this->createQueryBuilder('m');
+        return $qb->update()
+            ->set('m.installCount', $qb->expr()->sum('m.installCount', '1'))
+            ->where('m.metaId = :metaId')
+            ->setParameter('metaId', $metaId)
+            ->getQuery()
+            ->execute();
+    }
 }
