@@ -10,11 +10,12 @@ class MetaVoter extends Voter
 {
     // these strings are just invented: you can use anything
     const EDIT = 'EDIT';
+    const DELETE = 'DELETE';
 
     protected function supports($attribute, $subject)
     {
         // if the attribute isn't one we support, return false
-        if (!in_array($attribute, array(self::EDIT))) {
+        if (!in_array($attribute, array(self::EDIT, self::DELETE))) {
             return false;
         }
 
@@ -41,6 +42,9 @@ class MetaVoter extends Voter
 
         switch ($attribute) {
             case self::EDIT:
+                return $this->canEdit($post, $user);
+            case self::DELETE:
+                // I might change this in the future to further restrict this.
                 return $this->canEdit($post, $user);
         }
 
