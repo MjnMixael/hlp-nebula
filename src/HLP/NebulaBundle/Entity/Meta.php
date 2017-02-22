@@ -155,7 +155,7 @@ class Meta
     /**
      * @var  string
      *
-     * @ORM\Column(name="releaseThread", type="string", length=255)
+     * @ORM\Column(name="releaseThread", type="string", length=255, nullable=true)
      */
     private $releaseThread;
 
@@ -164,7 +164,7 @@ class Meta
      *
      * @ORM\Column(name="installCount", type="integer")
      */
-    private $installCount;
+    private $installCount = 0;
 
     /**
      * Get id
